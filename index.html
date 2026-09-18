@@ -46,66 +46,96 @@
     <!-- Main Content Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        <!-- 1. Classroom Milestone Reward Tracker -->
-        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 relative overflow-hidden">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <!-- 1. Classroom Milestone Reward Trackers (Workout & Reading Separated) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- 🔥 오운완 학급 보상 현황판 -->
+            <section class="bg-white rounded-2xl p-6 shadow-sm border border-orange-100 relative overflow-hidden flex flex-col justify-between space-y-4">
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-bold">학급 전체 목표</span>
-                        <h2 class="text-xl font-bold text-slate-900">🎉 우리 반 종합 달성률 현황</h2>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-800 text-xs font-bold">🔥 오운완 학급 목표</span>
+                        </div>
+                        <button id="editWorkoutRewardsBtn" onclick="openRewardModal('workout')" class="hidden px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-orange-200">
+                            <i data-lucide="settings" class="w-3 h-3"></i> 보상 수정
+                        </button>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1">우리 반 친구들의 오운완과 독서 달성률 평균으로 함께 학급 보상을 달성해보세요!</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <span class="text-3xl font-extrabold text-indigo-600" id="classAvgRate">0%</span>
-                        <span class="text-xs text-slate-400 block font-medium">학급 평균 달성률</span>
+                    <div class="flex items-baseline justify-between">
+                        <h2 class="text-lg font-bold text-slate-900">운동 평균 달성률</h2>
+                        <span class="text-2xl font-extrabold text-orange-600" id="workoutClassAvgRate">0%</span>
                     </div>
-                    <!-- Teacher Edit Rewards Button -->
-                    <button id="editRewardsBtn" onclick="openRewardModal()" class="hidden px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition-all flex items-center gap-1 border border-slate-300">
-                        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-                        보상 수정
-                    </button>
-                </div>
-            </div>
 
-            <!-- Progress Bar -->
-            <div class="relative w-full bg-slate-100 h-6 rounded-full overflow-hidden p-1 mb-8">
-                <div id="classProgressBar" class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-700 w-0"></div>
-            </div>
+                    <!-- Progress Bar -->
+                    <div class="relative w-full bg-slate-100 h-4 rounded-full overflow-hidden p-0.5 my-4">
+                        <div id="workoutProgressBar" class="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-700 w-0"></div>
+                    </div>
 
-            <!-- Reward Milestones Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="border rounded-xl p-3 bg-slate-50 flex flex-col justify-between relative overflow-hidden" id="reward25">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-500">25% 달성</span>
-                        <span class="text-lg">🍭</span>
+                    <!-- Reward Cards Grid -->
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div id="wReward25" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>25%</span><span>🍭</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText25">체육 시간 자유게임 10분</p>
+                        </div>
+                        <div id="wReward50" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>50%</span><span>🥤</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText50">음료수 파티</p>
+                        </div>
+                        <div id="wReward75" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>75%</span><span>⚽</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText75">학급 스포츠데이</p>
+                        </div>
+                        <div id="wReward100" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>100%</span><span>🏆</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText100">오운완 챔피언 파티</p>
+                        </div>
                     </div>
-                    <p class="text-xs font-bold text-slate-800 mt-2" id="rewardText25">자유시간 15분</p>
                 </div>
-                <div class="border rounded-xl p-3 bg-slate-50 flex flex-col justify-between relative overflow-hidden" id="reward50">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-500">50% 달성</span>
-                        <span class="text-lg">🍕</span>
+            </section>
+
+            <!-- 📚 독서 마라톤 학급 보상 현황판 -->
+            <section class="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 relative overflow-hidden flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">📚 독서 마라톤 학급 목표</span>
+                        </div>
+                        <button id="editReadingRewardsBtn" onclick="openRewardModal('reading')" class="hidden px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-emerald-200">
+                            <i data-lucide="settings" class="w-3 h-3"></i> 보상 수정
+                        </button>
                     </div>
-                    <p class="text-xs font-bold text-slate-800 mt-2" id="rewardText50">간식 파티</p>
-                </div>
-                <div class="border rounded-xl p-3 bg-slate-50 flex flex-col justify-between relative overflow-hidden" id="reward75">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-500">75% 달성</span>
-                        <span class="text-lg">🎬</span>
+                    <div class="flex items-baseline justify-between">
+                        <h2 class="text-lg font-bold text-slate-900">독서 평균 달성률</h2>
+                        <span class="text-2xl font-extrabold text-emerald-600" id="readingClassAvgRate">0%</span>
                     </div>
-                    <p class="text-xs font-bold text-slate-800 mt-2" id="rewardText75">학급 영화 관람</p>
-                </div>
-                <div class="border rounded-xl p-3 bg-slate-50 flex flex-col justify-between relative overflow-hidden" id="reward100">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-500">100% 완주</span>
-                        <span class="text-lg">👑</span>
+
+                    <!-- Progress Bar -->
+                    <div class="relative w-full bg-slate-100 h-4 rounded-full overflow-hidden p-0.5 my-4">
+                        <div id="readingProgressBar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-600 rounded-full transition-all duration-700 w-0"></div>
                     </div>
-                    <p class="text-xs font-bold text-slate-800 mt-2" id="rewardText100">체육대회 & 파티</p>
+
+                    <!-- Reward Cards Grid -->
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div id="rReward25" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>25%</span><span>🔖</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText25">예쁜 책갈피 선물</p>
+                        </div>
+                        <div id="rReward50" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>50%</span><span>🍪</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText50">독서 쿠키 파티</p>
+                        </div>
+                        <div id="rReward75" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>75%</span><span>📖</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText75">자율 독서 & 자유시간</p>
+                        </div>
+                        <div id="rReward100" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>100%</span><span>👑</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText100">북카페 영화 파티</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+        </div>
 
         <!-- 2. Goal Completers Hall of Fame -->
         <section class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 rounded-2xl p-6 border border-amber-200/60">
@@ -179,26 +209,27 @@
         </div>
     </div>
 
-    <!-- Edit Rewards Modal -->
+    <!-- Edit Rewards Modal (Goal Specific) -->
     <div id="rewardModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
-            <h3 class="text-lg font-bold text-slate-900">학급 달성 보상 설정</h3>
-            <p class="text-xs text-slate-500">각 달성률 단계별 우리 반 보상 문구를 설정하세요.</p>
+            <h3 class="text-lg font-bold text-slate-900" id="rewardModalTitle">학급 달성 보상 설정</h3>
+            <p class="text-xs text-slate-500">선택하신 목표 영역의 단계별 보상 문구를 설정하세요.</p>
             <form onsubmit="saveRewards(event)" class="space-y-3">
+                <input type="hidden" id="currentRewardTarget">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">🍭 25% 달성 보상</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">25% 달성 보상</label>
                     <input type="text" id="inputReward25" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">🍕 50% 달성 보상</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">50% 달성 보상</label>
                     <input type="text" id="inputReward50" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">🎬 75% 달성 보상</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">75% 달성 보상</label>
                     <input type="text" id="inputReward75" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">👑 100% 완주 보상</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">100% 완주 보상</label>
                     <input type="text" id="inputReward100" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -279,12 +310,8 @@
         // App State Variables
         let isTeacherMode = false;
         let studentData = [];
-        let rewardsData = {
-            r25: "자유시간 15분",
-            r50: "간식 파티",
-            r75: "학급 영화 관람",
-            r100: "체육대회 & 파티"
-        };
+        let workoutRewards = { r25: "체육시간 자유게임 10분", r50: "음료수 파티", r75: "학급 스포츠데이", r100: "오운완 챔피언 파티" };
+        let readingRewards = { r25: "예쁜 책갈피 선물", r50: "독서 쿠키 파티", r75: "자율 독서 & 자유시간", r100: "북카페 영화 파티" };
 
         // Auth State Listener
         onAuthStateChanged(auth, (user) => {
@@ -293,7 +320,8 @@
             const authStatusDot = document.getElementById("authStatusDot");
             const authStatusText = document.getElementById("authStatusText");
             const teacherToolbar = document.getElementById("teacherToolbar");
-            const editRewardsBtn = document.getElementById("editRewardsBtn");
+            const editWorkoutRewardsBtn = document.getElementById("editWorkoutRewardsBtn");
+            const editReadingRewardsBtn = document.getElementById("editReadingRewardsBtn");
 
             if (user) {
                 isTeacherMode = true;
@@ -302,7 +330,8 @@
                 authStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
                 authStatusText.innerText = `교사 인증됨 (${user.email || 'Google 계정'})`;
                 teacherToolbar.classList.remove("hidden");
-                editRewardsBtn.classList.remove("hidden");
+                editWorkoutRewardsBtn.classList.remove("hidden");
+                editReadingRewardsBtn.classList.remove("hidden");
             } else {
                 isTeacherMode = false;
                 authBtnText.innerText = "교사 로그인";
@@ -310,7 +339,8 @@
                 authStatusDot.className = "w-2 h-2 rounded-full bg-slate-400";
                 authStatusText.innerText = "학생 (열람 전용 모드)";
                 teacherToolbar.classList.add("hidden");
-                editRewardsBtn.classList.add("hidden");
+                editWorkoutRewardsBtn.classList.add("hidden");
+                editReadingRewardsBtn.classList.add("hidden");
             }
             renderStudents();
         });
@@ -360,21 +390,37 @@
             renderClassStats();
         });
 
-        // Realtime Firestore Listener - Rewards Settings
-        const rewardsDocRef = doc(db, "settings", "rewards");
-        onSnapshot(rewardsDocRef, (docSnap) => {
+        // Realtime Firestore Listener - Goal Specific Rewards Settings
+        const workoutRewardsDocRef = doc(db, "settings", "workoutRewards");
+        onSnapshot(workoutRewardsDocRef, (docSnap) => {
             if (docSnap.exists()) {
-                rewardsData = docSnap.data();
+                workoutRewards = docSnap.data();
                 updateRewardTextsUI();
+                renderClassStats();
             }
         });
 
-        // Reward Modal Handlers
-        window.openRewardModal = () => {
-            document.getElementById("inputReward25").value = rewardsData.r25 || "자유시간 15분";
-            document.getElementById("inputReward50").value = rewardsData.r50 || "간식 파티";
-            document.getElementById("inputReward75").value = rewardsData.r75 || "학급 영화 관람";
-            document.getElementById("inputReward100").value = rewardsData.r100 || "체육대회 & 파티";
+        const readingRewardsDocRef = doc(db, "settings", "readingRewards");
+        onSnapshot(readingRewardsDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                readingRewards = docSnap.data();
+                updateRewardTextsUI();
+                renderClassStats();
+            }
+        });
+
+        // Goal Specific Reward Modal Handlers
+        window.openRewardModal = (target) => {
+            document.getElementById("currentRewardTarget").value = target;
+            const title = target === 'workout' ? '🔥 오운완 학급 보상 설정' : '📚 독서 마라톤 학급 보상 설정';
+            document.getElementById("rewardModalTitle").innerText = title;
+
+            const data = target === 'workout' ? workoutRewards : readingRewards;
+            document.getElementById("inputReward25").value = data.r25 || "";
+            document.getElementById("inputReward50").value = data.r50 || "";
+            document.getElementById("inputReward75").value = data.r75 || "";
+            document.getElementById("inputReward100").value = data.r100 || "";
+            
             document.getElementById("rewardModal").classList.remove("hidden");
         };
 
@@ -384,20 +430,29 @@
             e.preventDefault();
             if (!isTeacherMode) return alert("교사 인증 후 사용 가능합니다.");
 
+            const target = document.getElementById("currentRewardTarget").value;
             const r25 = document.getElementById("inputReward25").value;
             const r50 = document.getElementById("inputReward50").value;
             const r75 = document.getElementById("inputReward75").value;
             const r100 = document.getElementById("inputReward100").value;
 
-            await setDoc(doc(db, "settings", "rewards"), { r25, r50, r75, r100 });
+            const docName = target === 'workout' ? 'workoutRewards' : 'readingRewards';
+            await setDoc(doc(db, "settings", docName), { r25, r50, r75, r100 });
             closeRewardModal();
         };
 
         function updateRewardTextsUI() {
-            document.getElementById("rewardText25").innerText = rewardsData.r25 || "자유시간 15분";
-            document.getElementById("rewardText50").innerText = rewardsData.r50 || "간식 파티";
-            document.getElementById("rewardText75").innerText = rewardsData.r75 || "학급 영화 관람";
-            document.getElementById("rewardText100").innerText = rewardsData.r100 || "체육대회 & 파티";
+            // Workout Rewards UI
+            document.getElementById("wRewardText25").innerText = workoutRewards.r25 || "체육시간 자유게임 10분";
+            document.getElementById("wRewardText50").innerText = workoutRewards.r50 || "음료수 파티";
+            document.getElementById("wRewardText75").innerText = workoutRewards.r75 || "학급 스포츠데이";
+            document.getElementById("wRewardText100").innerText = workoutRewards.r100 || "오운완 챔피언 파티";
+
+            // Reading Rewards UI
+            document.getElementById("rRewardText25").innerText = readingRewards.r25 || "예쁜 책갈피 선물";
+            document.getElementById("rRewardText50").innerText = readingRewards.r50 || "독서 쿠키 파티";
+            document.getElementById("rRewardText75").innerText = readingRewards.r75 || "자율 독서 & 자유시간";
+            document.getElementById("rRewardText100").innerText = readingRewards.r100 || "북카페 영화 파티";
         }
 
         // Student Data CRUD
@@ -557,18 +612,30 @@
                 }
             });
 
-            const avgRate = Math.round((totalWorkoutRate + totalReadingRate) / (studentData.length * 2));
-            document.getElementById("classAvgRate").innerText = `${avgRate}%`;
-            document.getElementById("classProgressBar").style.width = `${avgRate}%`;
+            const avgWorkout = Math.round(totalWorkoutRate / studentData.length);
+            const avgReading = Math.round(totalReadingRate / studentData.length);
 
-            // Milestone Highlight Updates
-            const milestones = [25, 50, 75, 100];
-            milestones.forEach(m => {
-                const el = document.getElementById(`reward${m}`);
-                if (avgRate >= m) {
-                    el.className = "border-2 border-indigo-500 rounded-xl p-3 bg-gradient-to-br from-indigo-50 to-purple-50 flex flex-col justify-between relative overflow-hidden shadow-sm";
+            // Update Workout Progress & Milestones UI
+            document.getElementById("workoutClassAvgRate").innerText = `${avgWorkout}%`;
+            document.getElementById("workoutProgressBar").style.width = `${avgWorkout}%`;
+            [25, 50, 75, 100].forEach(m => {
+                const el = document.getElementById(`wReward${m}`);
+                if (avgWorkout >= m) {
+                    el.className = "border-2 border-orange-500 rounded-xl p-2.5 bg-gradient-to-br from-orange-50 to-amber-50 shadow-sm opacity-100";
                 } else {
-                    el.className = "border rounded-xl p-3 bg-slate-50 flex flex-col justify-between relative overflow-hidden opacity-60";
+                    el.className = "border rounded-xl p-2.5 bg-slate-50 opacity-50";
+                }
+            });
+
+            // Update Reading Progress & Milestones UI
+            document.getElementById("readingClassAvgRate").innerText = `${avgReading}%`;
+            document.getElementById("readingProgressBar").style.width = `${avgReading}%`;
+            [25, 50, 75, 100].forEach(m => {
+                const el = document.getElementById(`rReward${m}`);
+                if (avgReading >= m) {
+                    el.className = "border-2 border-emerald-500 rounded-xl p-2.5 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-sm opacity-100";
+                } else {
+                    el.className = "border rounded-xl p-2.5 bg-slate-50 opacity-50";
                 }
             });
 
