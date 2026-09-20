@@ -289,6 +289,10 @@
                 </div>
                 
                 <!-- Teacher Buttons -->
+                <button id="btn-change-pin" onclick="openChangePinModal()" class="hidden px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors items-center space-x-1 whitespace-nowrap shadow-sm">
+                    <i class="fa-solid fa-key"></i>
+                    <span>암호 변경</span>
+                </button>
                 <button id="btn-excel-upload" onclick="openExcelModal()" class="hidden px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors items-center space-x-1 whitespace-nowrap shadow-sm">
                     <i class="fa-solid fa-file-excel"></i>
                     <span>엑셀 일괄 등록</span>
@@ -575,6 +579,36 @@
         </div>
     </div>
 
+    <!-- MODAL: Change Teacher PIN Modal -->
+    <div id="modal-change-pin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl border border-slate-100 text-center">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 mb-1">교사 비밀번호 변경</h3>
+            <p class="text-xs text-slate-500 mb-4">새로 사용할 비밀번호를 입력해 주세요.</p>
+            
+            <form onsubmit="handleChangePin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 text-left mb-1">새 비밀번호</label>
+                    <input type="password" id="new-pin-input" required placeholder="새 비밀번호 입력" class="w-full text-center px-3 py-2 border border-slate-300 rounded-xl text-base font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 text-left mb-1">새 비밀번호 확인</label>
+                    <input type="password" id="new-pin-confirm" required placeholder="한 번 더 입력" class="w-full text-center px-3 py-2 border border-slate-300 rounded-xl text-base font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+                <div class="flex space-x-2 pt-2">
+                    <button type="button" onclick="closeChangePinModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
+                        취소
+                    </button>
+                    <button type="submit" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold">
+                        변경 완료
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Notification Overlay Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
@@ -622,6 +656,7 @@
         const STUDENTS_COL = collection(db, 'artifacts', appId, 'public', 'data', 'students');
         const LOGS_COL = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
         const GOALS_COL = collection(db, 'artifacts', appId, 'public', 'data', 'class_goals');
+        const CONFIG_DOC = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
 
         // Application Global State
         window.state = {
@@ -653,6 +688,15 @@
                     statusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
                     statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="hidden md:inline">실시간 연결됨</span>`;
                 }
+
+                // Subscribe to System Settings (Teacher PIN)
+                onSnapshot(CONFIG_DOC, (docSnap) => {
+                    if (docSnap.exists() && docSnap.data().teacherPin) {
+                        window.state.teacherPin = docSnap.data().teacherPin;
+                    }
+                }, (error) => {
+                    console.error("Config sync error:", error);
+                });
 
                 // Subscribe to Class Goals Collection
                 onSnapshot(GOALS_COL, (snapshot) => {
@@ -933,7 +977,45 @@
                 updateTeacherModeUI();
                 showToast("교사 관리자 모드로 인증되었습니다.", "success");
             } else {
-                showToast("비밀번호가 올바르지 않습니다. (기본: 1234)", "error");
+                showToast("비밀번호가 올바르지 않습니다.", "error");
+            }
+        };
+
+        // Change Teacher PIN Handlers
+        window.openChangePinModal = function() {
+            document.getElementById('new-pin-input').value = "";
+            document.getElementById('new-pin-confirm').value = "";
+            document.getElementById('modal-change-pin').classList.remove('hidden');
+        };
+
+        window.closeChangePinModal = function() {
+            document.getElementById('modal-change-pin').classList.add('hidden');
+        };
+
+        window.handleChangePin = async function(e) {
+            e.preventDefault();
+            const newPin = document.getElementById('new-pin-input').value.trim();
+            const confirmPin = document.getElementById('new-pin-confirm').value.trim();
+
+            if (!newPin || newPin.length < 2) {
+                showToast("비밀번호는 최소 2자리 이상 입력해주세요.", "warning");
+                return;
+            }
+
+            if (newPin !== confirmPin) {
+                showToast("새 비밀번호 확인이 일치하지 않습니다.", "error");
+                return;
+            }
+
+            try {
+                await setDoc(CONFIG_DOC, { teacherPin: newPin }, { merge: true });
+                window.state.teacherPin = newPin;
+                await logActivity('system', '교사설정', '교사 인증 비밀번호 변경 완료');
+                showToast("교사 비밀번호가 변경되었습니다.", "success");
+                closeChangePinModal();
+            } catch (err) {
+                console.error("Change PIN error:", err);
+                showToast("비밀번호 변경 중 오류가 발생했습니다.", "error");
             }
         };
 
@@ -1480,17 +1562,31 @@
         function parseAndPreviewExcelData(jsonRows) {
             const parsed = [];
             
-            jsonRows.forEach((row, idx) => {
-                // Support multiple key synonyms
-                const name = (row['이름'] || row['학생이름'] || row['Name'] || row['name'] || '').toString().trim();
-                const workout = parseInt(row['오운완목표'] || row['운동목표'] || row['workout'] || 50);
-                const reading = parseInt(row['독서목표'] || row['독서권수'] || row['reading'] || 20);
+            jsonRows.forEach((row) => {
+                // Key normalization: trim space and normalize casing
+                const normalizedRow = {};
+                Object.keys(row).forEach(k => {
+                    if (k) {
+                        const cleanKey = k.toString().replace(/\s+/g, '').toLowerCase();
+                        normalizedRow[cleanKey] = row[k];
+                    }
+                });
+
+                // Robust field resolution
+                const nameVal = normalizedRow['이름'] || normalizedRow['학생이름'] || normalizedRow['학생'] || normalizedRow['성명'] || normalizedRow['name'] || '';
+                const name = nameVal.toString().trim();
+
+                const workoutVal = normalizedRow['오운완목표'] || normalizedRow['오운완'] || normalizedRow['운동목표'] || normalizedRow['운동'] || normalizedRow['workout'] || normalizedRow['workouttarget'];
+                const readingVal = normalizedRow['독서목표'] || normalizedRow['독서'] || normalizedRow['독서권수'] || normalizedRow['권수'] || normalizedRow['reading'] || normalizedRow['readingtarget'];
 
                 if (name) {
+                    const workoutNum = parseInt(workoutVal);
+                    const readingNum = parseInt(readingVal);
+
                     parsed.push({
                         name,
-                        targetWorkout: isNaN(workout) || workout <= 0 ? 50 : workout,
-                        targetReading: isNaN(reading) || reading <= 0 ? 20 : reading
+                        targetWorkout: (!isNaN(workoutNum) && workoutNum > 0) ? workoutNum : 50,
+                        targetReading: (!isNaN(readingNum) && readingNum > 0) ? readingNum : 20
                     });
                 }
             });
@@ -1572,6 +1668,7 @@
             const btnTeacher = document.getElementById('btn-mode-teacher');
             const btnAddStudent = document.getElementById('btn-add-student');
             const btnExcelUpload = document.getElementById('btn-excel-upload');
+            const btnChangePin = document.getElementById('btn-change-pin');
             const btnEditRewards = document.getElementById('btn-edit-rewards');
             const historyPanel = document.getElementById('teacher-history-panel');
 
@@ -1580,6 +1677,7 @@
                 if (btnStudent) btnStudent.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900";
                 if (btnAddStudent) { btnAddStudent.classList.remove('hidden'); btnAddStudent.classList.add('flex'); }
                 if (btnExcelUpload) { btnExcelUpload.classList.remove('hidden'); btnExcelUpload.classList.add('flex'); }
+                if (btnChangePin) { btnChangePin.classList.remove('hidden'); btnChangePin.classList.add('flex'); }
                 if (btnEditRewards) { btnEditRewards.classList.remove('hidden'); btnEditRewards.classList.add('flex'); }
                 if (historyPanel) historyPanel.classList.remove('hidden');
             } else {
@@ -1587,6 +1685,7 @@
                 if (btnTeacher) btnTeacher.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900";
                 if (btnAddStudent) { btnAddStudent.classList.add('hidden'); btnAddStudent.classList.remove('flex'); }
                 if (btnExcelUpload) { btnExcelUpload.classList.add('hidden'); btnExcelUpload.classList.remove('flex'); }
+                if (btnChangePin) { btnChangePin.classList.add('hidden'); btnChangePin.classList.remove('flex'); }
                 if (btnEditRewards) { btnEditRewards.classList.add('hidden'); btnEditRewards.classList.remove('flex'); }
                 if (historyPanel) historyPanel.classList.add('hidden');
             }
