@@ -634,29 +634,30 @@
     <!-- Firebase Script Execution -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Configuration & Global Setup
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'class-challenge-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "demo-api-key",
-            authDomain: "demo-app.firebaseapp.com",
-            projectId: "demo-app",
-            storageBucket: "demo-app.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
-        };
+        // 🔑 [수정 가이드] 아래 firebaseConfig 객체 안에 Firebase 콘솔에서 복사한 키 값을 넣으세요.
+    const firebaseConfig = {
+  apiKey: "AIzaSyAH7WtGbV5ZWaFF7LMIboiQsaCwKysmB4w",
+  authDomain: "classgoal-baceb.firebaseapp.com",
+  projectId: "classgoal-baceb",
+  storageBucket: "classgoal-baceb.firebasestorage.app",
+  messagingSenderId: "117840521462",
+  appId: "1:117840521462:web:6f69ac786409c0a182a4d7",
+  measurementId: "G-BJCC5ZXY87"
+};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Firestore Public Collections Paths
-        const STUDENTS_COL = collection(db, 'artifacts', appId, 'public', 'data', 'students');
-        const LOGS_COL = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
-        const GOALS_COL = collection(db, 'artifacts', appId, 'public', 'data', 'class_goals');
-        const CONFIG_DOC = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+        // Firebase 데이터 저장 경로 (학급별 데이터 분리 원할 경우 경로 수정 가능)
+        const CLASS_COLLECTION_PATH = 'my_class_data';
+        const STUDENTS_COL = collection(db, CLASS_COLLECTION_PATH, 'students', 'list');
+        const LOGS_COL = collection(db, CLASS_COLLECTION_PATH, 'logs', 'list');
+        const GOALS_COL = collection(db, CLASS_COLLECTION_PATH, 'goals', 'list');
+        const CONFIG_DOC = doc(db, CLASS_COLLECTION_PATH, 'settings');
 
         // Application Global State
         window.state = {
@@ -665,7 +666,7 @@
             teacherPin: '1234',
             students: [],
             logs: [],
-            classGoals: [], // Dynamic array of class goals: [{id, targetPct, title}]
+            classGoals: [],
             excelParsedData: [],
             dialogCallback: null
         };
@@ -673,13 +674,8 @@
         // Initialize App & Auth
         async function initApp() {
             try {
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                let userCred;
-                if (initialAuthToken) {
-                    userCred = await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    userCred = await signInAnonymously(auth);
-                }
+                // 익명 로그인 실행 (학생들이 별도 가입 없이 데이터를 주고받기 위함)
+                const userCred = await signInAnonymously(auth);
                 window.state.currentUser = userCred.user;
                 
                 // Update UI Connection Status
@@ -705,7 +701,6 @@
                         goals.push({ id: doc.id, ...doc.data() });
                     });
                     
-                    // Default default goals if collection is empty
                     if (goals.length === 0) {
                         seedDefaultGoals();
                     } else {
@@ -728,7 +723,7 @@
                     renderAll();
                 }, (error) => {
                     console.error("Students sync error:", error);
-                    showToast("데이터 동기화 중 오류가 발생했습니다.", "error");
+                    showToast("데이터 동기화 오류. Firebase 설정을 확인해주세요.", "error");
                 });
 
                 // Subscribe to Activity Logs Collection
@@ -749,7 +744,7 @@
                 const statusEl = document.getElementById('sync-status');
                 if (statusEl) {
                     statusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span class="hidden md:inline">오프라인 모드</span>`;
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span class="hidden md:inline">연결 실패</span>`;
                 }
             }
         }
@@ -1391,7 +1386,7 @@
             }).join('');
         }
 
-        /* --- CLASS GOALS MANAGEMENT (학급 목표 추가/수정/삭제) --- */
+        /* --- CLASS GOALS MANAGEMENT --- */
         window.openClassGoalsModal = function() {
             resetGoalForm();
             renderClassGoalsList();
@@ -1502,7 +1497,7 @@
             document.getElementById('btn-cancel-goal-edit').classList.add('hidden');
         };
 
-        /* --- EXCEL BULK UPLOAD (엑셀 일괄 등록) --- */
+        /* --- EXCEL BULK UPLOAD --- */
         window.openExcelModal = function() {
             window.state.excelParsedData = [];
             document.getElementById('excel-file-input').value = "";
@@ -1563,7 +1558,6 @@
             const parsed = [];
             
             jsonRows.forEach((row) => {
-                // Key normalization: trim space and normalize casing
                 const normalizedRow = {};
                 Object.keys(row).forEach(k => {
                     if (k) {
@@ -1572,7 +1566,6 @@
                     }
                 });
 
-                // Robust field resolution
                 const nameVal = normalizedRow['이름'] || normalizedRow['학생이름'] || normalizedRow['학생'] || normalizedRow['성명'] || normalizedRow['name'] || '';
                 const name = nameVal.toString().trim();
 
