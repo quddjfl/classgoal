@@ -3,1772 +3,696 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 학급 도전성취 프로그램 (오운완 & 독서마라톤)</title>
+    <title>학급 도전성취프로그램 - 오운완 & 독서마라톤</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter & Noto Sans KR -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- SheetJS (XLSX) CDN for Excel Import/Export -->
+    <!-- SheetJS CDN for Excel Processing -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Noto Sans KR', 'sans-serif'],
-                    },
-                    colors: {
-                        workout: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            500: '#f97316',
-                            600: '#ea580c',
-                            700: '#c2410c',
-                        },
-                        reading: {
-                            50: '#ecfdf5',
-                            100: '#d1fae5',
-                            500: '#10b981',
-                            600: '#059669',
-                            700: '#047857',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        .progress-bar-animated {
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans min-h-screen text-slate-800 antialiased flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Top Header Navigation -->
+    <!-- Navigation Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- App Title -->
-            <div class="flex items-center space-x-3">
-                <div class="bg-gradient-to-tr from-amber-500 to-emerald-500 text-white p-2 rounded-xl shadow-sm">
-                    <i class="fa-solid fa-trophy text-xl"></i>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-md">
+                    <i data-lucide="trophy" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                        학급 도전성취 프로그램
-                    </h1>
-                    <p class="text-xs text-slate-500 hidden sm:block">🔥 오운완 (오늘 운동 완료) & 📚 독서 마라톤</p>
+                    <h1 class="font-bold text-lg text-slate-900 leading-tight">학급 도전성취프로그램</h1>
+                    <p class="text-xs text-slate-500 font-medium">🔥 오운완 & 📚 독서 마라톤</p>
                 </div>
             </div>
 
-            <!-- Header Action Controls -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <!-- Data Sync Status Badge -->
-                <div id="sync-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span class="hidden md:inline">연결 중...</span>
+            <!-- Auth Controls -->
+            <div class="flex items-center gap-3">
+                <div id="authStatusBadge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                    <span id="authStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span id="authStatusText">학생 (열람 전용 모드)</span>
                 </div>
-
-                <!-- Mode Switcher -->
-                <div class="bg-slate-100 p-1 rounded-lg flex text-xs font-medium border border-slate-200">
-                    <button id="btn-mode-student" onclick="switchMode('student')" class="px-3 py-1.5 rounded-md transition-all shadow-sm bg-white text-slate-800 font-semibold">
-                        <i class="fa-solid fa-users mr-1"></i>학생 전광판
-                    </button>
-                    <button id="btn-mode-teacher" onclick="requestTeacherAccess()" class="px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900">
-                        <i class="fa-solid fa-user-gear mr-1"></i>교사 관리
-                    </button>
-                </div>
+                
+                <button id="authBtn" onclick="openAuthModal()" class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-sm transition-all shadow-sm">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                    <span id="authBtnText">교사 로그인</span>
+                </button>
             </div>
         </div>
     </header>
 
     <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        <!-- Banner / Stats Overview Card -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Total Class Stats -->
-            <div class="bg-gradient-to-br from-indigo-900 to-slate-800 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between">
-                <div class="absolute -right-4 -bottom-4 opacity-10 text-9xl">
-                    <i class="fa-solid fa-award"></i>
-                </div>
+        <!-- 1. Milestone Trackers -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 🔥 오운완 학급 보상 현황판 -->
+            <section class="bg-white rounded-2xl p-6 shadow-sm border border-orange-100 relative overflow-hidden flex flex-col justify-between space-y-4">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-indigo-300">Class Progress</span>
-                    <h2 class="text-xl font-bold mt-1">우리 학급 도전 목표 현황</h2>
-                </div>
-                <div class="mt-4 grid grid-cols-2 gap-2 text-center">
-                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-2.5">
-                        <p class="text-xs text-indigo-200">총 학생 수</p>
-                        <p id="stat-student-count" class="text-2xl font-black text-white">0명</p>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-800 text-xs font-bold">🔥 오운완 학급 목표</span>
+                        <button id="editWorkoutRewardsBtn" onclick="openRewardModal('workout')" class="hidden px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-orange-200">
+                            <i data-lucide="settings" class="w-3 h-3"></i> 보상 수정
+                        </button>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-2.5">
-                        <p class="text-xs text-indigo-200">평균 달성률</p>
-                        <p id="stat-avg-progress" class="text-2xl font-black text-amber-300">0%</p>
+                    <div class="flex items-baseline justify-between">
+                        <h2 class="text-lg font-bold text-slate-900">운동 평균 달성률</h2>
+                        <span class="text-2xl font-extrabold text-orange-600" id="workoutClassAvgRate">0%</span>
                     </div>
-                </div>
-            </div>
 
-            <!-- Workout Summary -->
-            <div class="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between">
-                <div class="absolute -right-2 -bottom-2 opacity-15 text-8xl">
-                    <i class="fa-solid fa-fire-flame-curved"></i>
-                </div>
-                <div class="flex justify-between items-start">
-                    <div>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-white/20 text-white">
-                            <i class="fa-solid fa-dumbbell mr-1"></i> 오운완
-                        </span>
-                        <h3 class="text-lg font-bold mt-1">오늘 운동 완료</h3>
+                    <div class="relative w-full bg-slate-100 h-4 rounded-full overflow-hidden p-0.5 my-4">
+                        <div id="workoutProgressBar" class="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-700 w-0"></div>
                     </div>
-                    <span id="stat-workout-today-count" class="bg-white text-orange-600 font-bold px-2.5 py-1 rounded-full text-xs shadow">
-                        오늘 0명 달성
-                    </span>
-                </div>
-                <div class="mt-4">
-                    <div class="flex justify-between text-xs text-orange-100 mb-1">
-                        <span>학급 누적 운동 횟수</span>
-                        <span id="stat-workout-total" class="font-bold text-white">0회</span>
-                    </div>
-                    <div class="w-full bg-black/20 rounded-full h-2.5 overflow-hidden">
-                        <div id="stat-workout-bar" class="bg-white h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Reading Summary -->
-            <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between">
-                <div class="absolute -right-2 -bottom-2 opacity-15 text-8xl">
-                    <i class="fa-solid fa-book-open"></i>
-                </div>
-                <div class="flex justify-between items-start">
-                    <div>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-white/20 text-white">
-                            <i class="fa-solid fa-book mr-1"></i> 독서 마라톤
-                        </span>
-                        <h3 class="text-lg font-bold mt-1">학년도 독서 목표</h3>
-                    </div>
-                    <span id="stat-reading-completers" class="bg-white text-emerald-700 font-bold px-2.5 py-1 rounded-full text-xs shadow">
-                        완주자 0명
-                    </span>
-                </div>
-                <div class="mt-4">
-                    <div class="flex justify-between text-xs text-emerald-100 mb-1">
-                        <span>학급 누적 독서량</span>
-                        <span id="stat-reading-total" class="font-bold text-white">0권</span>
-                    </div>
-                    <div class="w-full bg-black/20 rounded-full h-2.5 overflow-hidden">
-                        <div id="stat-reading-bar" class="bg-white h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div id="wReward25" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>25%</span><span>🍭</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText25">체육시간 자유게임 10분</p>
+                        </div>
+                        <div id="wReward50" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>50%</span><span>🥤</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText50">음료수 파티</p>
+                        </div>
+                        <div id="wReward75" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>75%</span><span>⚽</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText75">학급 스포츠데이</p>
+                        </div>
+                        <div id="wReward100" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>100%</span><span>🏆</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="wRewardText100">오운완 챔피언 파티</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- 📚 독서 마라톤 학급 보상 현황판 -->
+            <section class="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 relative overflow-hidden flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">📚 독서 마라톤 학급 목표</span>
+                        <button id="editReadingRewardsBtn" onclick="openRewardModal('reading')" class="hidden px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-emerald-200">
+                            <i data-lucide="settings" class="w-3 h-3"></i> 보상 수정
+                        </button>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                        <h2 class="text-lg font-bold text-slate-900">독서 평균 달성률</h2>
+                        <span class="text-2xl font-extrabold text-emerald-600" id="readingClassAvgRate">0%</span>
+                    </div>
+
+                    <div class="relative w-full bg-slate-100 h-4 rounded-full overflow-hidden p-0.5 my-4">
+                        <div id="readingProgressBar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-600 rounded-full transition-all duration-700 w-0"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div id="rReward25" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>25%</span><span>🔖</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText25">예쁜 책갈피 선물</p>
+                        </div>
+                        <div id="rReward50" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>50%</span><span>🍪</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText50">독서 쿠키 파티</p>
+                        </div>
+                        <div id="rReward75" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>75%</span><span>📖</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText75">자율 독서 & 자유시간</p>
+                        </div>
+                        <div id="rReward100" class="border rounded-xl p-2.5 bg-slate-50 opacity-60 transition-all">
+                            <div class="flex justify-between text-slate-400 font-bold"><span>100%</span><span>👑</span></div>
+                            <p class="font-bold text-slate-800 mt-1" id="rRewardText100">북카페 영화 파티</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <!-- Class Achievement Reward Section -->
-        <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                <div class="flex items-center space-x-2">
-                    <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md">
-                        <i class="fa-solid fa-gift text-2xl text-amber-100"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-extrabold flex items-center gap-2">
-                            <span>🎉 우리 학급 종합 보상 마일스톤</span>
-                        </h2>
-                        <p class="text-xs text-amber-100">학급 전체 평균 달성률에 따라 설정된 학급 보상을 해제해요!</p>
-                    </div>
-                </div>
-                <!-- Teacher Edit Class Goals Button -->
-                <button id="btn-edit-rewards" onclick="openClassGoalsModal()" class="hidden px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition-all items-center space-x-1 backdrop-blur-md border border-white/30 self-start sm:self-auto">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>학급 목표 관리</span>
+        <!-- 2. Goal Completers Hall of Fame -->
+        <section class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 rounded-2xl p-6 border border-amber-200/60">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="award" class="w-6 h-6 text-amber-600"></i>
+                <h2 class="text-xl font-bold text-slate-900">🏆 목표 달성 명예의 전당</h2>
+            </div>
+            <div id="hallOfFameContainer" class="flex flex-wrap gap-3">
+                <p class="text-xs text-slate-500 py-2">아직 목표를 완주한 학생이 없습니다. 첫 번째 주인공에 도전해보세요!</p>
+            </div>
+        </section>
+
+        <!-- 3. Teacher Management Toolbar -->
+        <section id="teacherToolbar" class="hidden bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-indigo-900 font-semibold text-sm">
+                <i data-lucide="shield-check" class="w-5 h-5 text-indigo-600"></i>
+                <span>교사 관리 모드 활성화 중</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="downloadExcelTemplate()" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-300 transition-all flex items-center gap-1.5 shadow-sm">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i> 엑셀 양식
+                </button>
+                <button onclick="triggerExcelUpload()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> 엑셀 일괄 등록
+                </button>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+                <button onclick="openAddStudentModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> 학생 등록
                 </button>
             </div>
+        </section>
 
-            <!-- Dynamic Reward Progress Steps -->
-            <div id="reward-milestone-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 relative z-10">
-                <!-- Dynamically Rendered Class Goals -->
+        <!-- 4. Student Roster Grid -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="users" class="w-5 h-5 text-slate-500"></i>
+                    학생별 도전 현황판
+                </h2>
             </div>
-        </div>
-
-        <!-- Hall of Fame Showcase Section -->
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <div class="bg-amber-100 text-amber-700 p-2 rounded-xl font-bold">
-                        <i class="fa-solid fa-crown text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-extrabold text-slate-900">🏆 목표 달성 명예의 전당</h3>
-                        <p class="text-xs text-slate-500">개별 도전 목표를 100% 완주한 빛나는 자랑스러운 명단입니다.</p>
-                    </div>
-                </div>
-                <div class="text-xs font-bold px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200" id="hall-of-fame-count-badge">
-                    총 0명 완주
-                </div>
-            </div>
-
-            <!-- Hall of Fame Category Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Double Crown Achievers -->
-                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-amber-800 flex items-center">
-                            <i class="fa-solid fa-trophy mr-1 text-amber-500"></i> 👑 더블 크라운 (양쪽 완주)
-                        </span>
-                        <span id="badge-count-double" class="text-[10px] bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-full">0명</span>
-                    </div>
-                    <div id="hall-list-double" class="space-y-1.5 text-xs">
-                        <div class="text-slate-400 text-center py-4 text-xs">아직 더블 크라운 달성자가 없습니다.</div>
-                    </div>
-                </div>
-
-                <!-- Workout Achievers -->
-                <div class="bg-orange-50/60 border border-orange-200 rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-orange-800 flex items-center">
-                            <i class="fa-solid fa-fire mr-1 text-orange-500"></i> 🔥 오운완 목표 완주자
-                        </span>
-                        <span id="badge-count-workout" class="text-[10px] bg-orange-200 text-orange-900 font-extrabold px-2 py-0.5 rounded-full">0명</span>
-                    </div>
-                    <div id="hall-list-workout" class="space-y-1.5 text-xs">
-                        <div class="text-slate-400 text-center py-4 text-xs">아직 오운완 완주자가 없습니다.</div>
-                    </div>
-                </div>
-
-                <!-- Reading Achievers -->
-                <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-emerald-800 flex items-center">
-                            <i class="fa-solid fa-book-open mr-1 text-emerald-500"></i> 📚 독서 마라톤 완주자
-                        </span>
-                        <span id="badge-count-reading" class="text-[10px] bg-emerald-200 text-emerald-900 font-extrabold px-2 py-0.5 rounded-full">0명</span>
-                    </div>
-                    <div id="hall-list-reading" class="space-y-1.5 text-xs">
-                        <div class="text-slate-400 text-center py-4 text-xs">아직 독서 마라톤 완주자가 없습니다.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filter & Search Controls -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <!-- Filter Tabs -->
-            <div class="flex items-center space-x-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-                <button onclick="setFilter('all')" id="filter-btn-all" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white transition-colors whitespace-nowrap">
-                    전체 보기
-                </button>
-                <button onclick="setFilter('workout')" id="filter-btn-workout" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors whitespace-nowrap">
-                    🔥 오운완 순
-                </button>
-                <button onclick="setFilter('reading')" id="filter-btn-reading" class="filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors whitespace-nowrap">
-                    📚 독서 순
-                </button>
-            </div>
-
-            <!-- Search Bar & Teacher Controls -->
-            <div class="flex items-center space-x-2 w-full sm:w-auto">
-                <div class="relative flex-1 sm:w-64">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="renderStudentList()" placeholder="학생 이름 검색..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all">
-                </div>
-                
-                <!-- Teacher Buttons -->
-                <button id="btn-change-pin" onclick="openChangePinModal()" class="hidden px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors items-center space-x-1 whitespace-nowrap shadow-sm">
-                    <i class="fa-solid fa-key"></i>
-                    <span>암호 변경</span>
-                </button>
-                <button id="btn-excel-upload" onclick="openExcelModal()" class="hidden px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors items-center space-x-1 whitespace-nowrap shadow-sm">
-                    <i class="fa-solid fa-file-excel"></i>
-                    <span>엑셀 일괄 등록</span>
-                </button>
-                <button id="btn-add-student" onclick="openAddStudentModal()" class="hidden px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-colors items-center space-x-1 whitespace-nowrap shadow-sm">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>학생 등록</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Student Cards Grid Container -->
-        <div id="student-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- Loading Placeholder State -->
-            <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300">
-                <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-indigo-500"></i>
-                <p class="text-sm font-medium">학급 데이터를 불러오는 중입니다...</p>
-            </div>
-        </div>
-
-        <!-- Teacher Mode Activity History Panel (Teacher Only) -->
-        <div id="teacher-history-panel" class="hidden bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-600"></i>최근 인증 및 수정 기록
-                </h3>
-                <span class="text-xs text-slate-400">실시간 동기화됨</span>
-            </div>
-            <div id="activity-log-list" class="space-y-2 max-h-48 overflow-y-auto text-xs text-slate-600 pr-1">
-                <div class="text-slate-400 text-center py-4">기록된 인증 로그가 없습니다.</div>
-            </div>
-        </div>
-
+            <div id="studentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
-            <p>도전성취프로그램 - 오늘운동완료 & 독서마라톤 ⓒ 학급 운영 지원 도구</p>
-        </div>
-    </footer>
-
-    <!-- MODAL: Add / Edit Student Modal -->
-    <div id="modal-student" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all">
-            <div class="flex justify-between items-center mb-5">
-                <h3 id="modal-student-title" class="text-lg font-bold text-slate-900">학생 정보 등록</h3>
-                <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900">교사 인증 로그인</h3>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <form id="form-student" onsubmit="handleSaveStudent(event)" class="space-y-4">
-                <input type="hidden" id="student-id" value="">
-                
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">학생 이름 <span class="text-rose-500">*</span></label>
-                    <input type="text" id="student-name" required placeholder="예: 김철수" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
+            <button onclick="loginWithGoogle()" class="w-full py-3 px-4 bg-white border border-slate-300 hover:bg-slate-50 font-semibold rounded-xl text-slate-700 flex items-center justify-center gap-2 transition-all shadow-sm">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                Google 계정으로 로그인
+            </button>
+            <p class="text-xs text-center text-slate-400">Google 계정으로 로그인 시 개별 설정 및 데이터가 저장됩니다.</p>
+        </div>
+    </div>
 
+    <!-- Edit Rewards Modal -->
+    <div id="rewardModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900" id="rewardModalTitle">학급 달성 보상 설정</h3>
+            <form onsubmit="saveRewards(event)" class="space-y-3">
+                <input type="hidden" id="currentRewardTarget">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">25% 달성 보상</label>
+                    <input type="text" id="inputReward25" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">50% 달성 보상</label>
+                    <input type="text" id="inputReward50" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">75% 달성 보상</label>
+                    <input type="text" id="inputReward75" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">100% 완주 보상</label>
+                    <input type="text" id="inputReward100" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeRewardModal()" class="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-slate-50">취소</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900" id="studentModalTitle">학생 등록</h3>
+            <form onsubmit="saveStudent(event)" class="space-y-3">
+                <input type="hidden" id="modalStudentId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">학생 이름</label>
+                    <input type="text" id="modalStudentName" required placeholder="김철수" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-orange-700 mb-1">🔥 오운완 목표 횟수</label>
-                        <div class="relative">
-                            <input type="number" id="student-target-workout" min="1" max="365" required value="50" class="w-full px-3 py-2 border border-orange-200 bg-orange-50/50 rounded-xl text-sm font-semibold text-orange-900 focus:ring-2 focus:ring-orange-500 focus:outline-none">
-                            <span class="absolute right-3 top-2.5 text-xs text-orange-400 font-medium">회</span>
-                        </div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">🔥 오운완 목표 횟수</label>
+                        <input type="number" id="modalWorkoutGoal" required min="1" value="50" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-emerald-700 mb-1">📚 독서 목표 권수</label>
-                        <div class="relative">
-                            <input type="number" id="student-target-reading" min="1" max="200" required value="20" class="w-full px-3 py-2 border border-emerald-200 bg-emerald-50/50 rounded-xl text-sm font-semibold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            <span class="absolute right-3 top-2.5 text-xs text-emerald-400 font-medium">권</span>
-                        </div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">📚 독서 목표 권수</label>
+                        <input type="number" id="modalReadingGoal" required min="1" value="30" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                 </div>
-
-                <div class="pt-3 flex space-x-2">
-                    <button type="button" onclick="closeStudentModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
-                        취소
-                    </button>
-                    <button type="submit" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors shadow-md">
-                        저장하기
-                    </button>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeStudentModal()" class="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-slate-50">취소</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700">저장</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL: Student Detail / History Log -->
-    <div id="modal-detail" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-3">
-                <div>
-                    <span id="detail-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700">도전 현황</span>
-                    <h3 id="detail-student-name" class="text-xl font-black text-slate-900 mt-1">학생 이름</h3>
-                </div>
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="overflow-y-auto space-y-4 pr-1 flex-1">
-                <!-- Stats Overview -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                        <div class="text-xs font-bold text-orange-800 flex items-center gap-1 mb-1">
-                            <i class="fa-solid fa-fire text-orange-500"></i> 오운완 현황
-                        </div>
-                        <div id="detail-workout-stat" class="text-lg font-black text-orange-900">0 / 50회</div>
-                        <div class="w-full bg-orange-200 h-2 rounded-full mt-2 overflow-hidden">
-                            <div id="detail-workout-bar" class="bg-orange-500 h-2 rounded-full" style="width:0%"></div>
-                        </div>
-                    </div>
-                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                        <div class="text-xs font-bold text-emerald-800 flex items-center gap-1 mb-1">
-                            <i class="fa-solid fa-book text-emerald-500"></i> 독서 마라톤 현황
-                        </div>
-                        <div id="detail-reading-stat" class="text-lg font-black text-emerald-900">0 / 20권</div>
-                        <div class="w-full bg-emerald-200 h-2 rounded-full mt-2 overflow-hidden">
-                            <div id="detail-reading-bar" class="bg-emerald-500 h-2 rounded-full" style="width:0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity History -->
-                <div>
-                    <h4 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 개인 인증 기록
-                    </h4>
-                    <div id="detail-history-list" class="space-y-1.5 text-xs max-h-40 overflow-y-auto border border-slate-100 rounded-xl p-2 bg-slate-50">
-                        <!-- History items -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-4 mt-2 border-t border-slate-100 text-right">
-                <button onclick="closeDetailModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors">
-                    닫기
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Class Goals Management (학급 목표 추가/수정/삭제) -->
-    <div id="modal-class-goals" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-trophy text-amber-500"></i> 학급 도전 목표 & 보상 관리
-                </h3>
-                <button onclick="closeClassGoalsModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <p class="text-xs text-slate-500 mb-4">학급 전체 평균 달성률 기준에 따른 도전 목표와 보상을 추가, 수정 또는 삭제합니다.</p>
-
-            <!-- Goals List -->
-            <div id="class-goals-list" class="space-y-2 mb-4 overflow-y-auto max-h-56 pr-1">
-                <!-- Goal Item Cards Rendered Dynamically -->
-            </div>
-
-            <!-- Add / Edit Goal Input Form -->
-            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                <h4 id="goal-form-title" class="text-xs font-bold text-slate-800 mb-2">+ 새 학급 목표 추가</h4>
-                <input type="hidden" id="goal-edit-id" value="">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-0.5">달성률 (%)</label>
-                        <input type="number" id="goal-target-pct" min="1" max="100" placeholder="예: 30" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-[11px] font-bold text-slate-600 mb-0.5">목표 보상 내용</label>
-                        <input type="text" id="goal-title" placeholder="예: 칭찬 스티커 2배 데이 ⭐️" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" id="btn-cancel-goal-edit" onclick="resetGoalForm()" class="hidden px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold">
-                        취소
-                    </button>
-                    <button type="button" onclick="handleSaveClassGoal()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold shadow-xs">
-                        <i class="fa-solid fa-plus mr-1"></i>목표 저장
-                    </button>
-                </div>
-            </div>
-
-            <div class="pt-4 mt-3 border-t border-slate-100 text-right">
-                <button onclick="closeClassGoalsModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors">
-                    닫기
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Excel Bulk Upload (학생 및 개인 목표 엑셀 일괄 업로드) -->
-    <div id="modal-excel" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-file-excel text-emerald-600"></i> 학생 명단 & 목표 엑셀 일괄 등록
-                </h3>
-                <button onclick="closeExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <p class="text-xs text-slate-500 mb-4">
-                엑셀 파일(.xlsx, .xls)을 선택하여 여러 학생의 명단과 개인별 오운완/독서 목표를 한번에 등록할 수 있습니다.
-            </p>
-
-            <!-- Template Download & File Input -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4 bg-emerald-50/70 p-3 rounded-xl border border-emerald-100">
-                <div class="text-xs text-emerald-900">
-                    <span class="font-bold">양식 파일:</span> [이름], [오운완목표], [독서목표]
-                </div>
-                <button onclick="downloadExcelTemplate()" class="px-3 py-1.5 bg-white hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-2xs">
-                    <i class="fa-solid fa-download"></i> 엑셀 양식 다운로드
-                </button>
-            </div>
-
-            <!-- Upload File Box -->
-            <div class="border-2 border-dashed border-slate-300 rounded-xl p-5 text-center hover:border-emerald-500 transition-colors cursor-pointer bg-slate-50 mb-4" onclick="document.getElementById('excel-file-input').click()">
-                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2"></i>
-                <p class="text-xs font-bold text-slate-700">클릭하여 엑셀(.xlsx, .xls) 파일 선택</p>
-                <p id="excel-file-name" class="text-[11px] text-emerald-600 font-semibold mt-1">선택된 파일 없음</p>
-                <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" onchange="handleExcelFileSelect(event)" class="hidden">
-            </div>
-
-            <!-- Parsed Data Preview Table -->
-            <div class="flex-1 overflow-y-auto mb-4 border border-slate-200 rounded-xl">
-                <table class="w-full text-xs text-left">
-                    <thead class="bg-slate-100 text-slate-700 sticky top-0 border-b border-slate-200">
-                        <tr>
-                            <th class="p-2.5 font-bold">#</th>
-                            <th class="p-2.5 font-bold">학생 이름</th>
-                            <th class="p-2.5 font-bold text-orange-700">🔥 오운완 목표</th>
-                            <th class="p-2.5 font-bold text-emerald-700">📚 독서 목표</th>
-                        </tr>
-                    </thead>
-                    <tbody id="excel-preview-tbody" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="4" class="text-center py-8 text-slate-400">엑셀 파일을 업로드하면 미리보기가 표시됩니다.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Modal Action Buttons -->
-            <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-                <span id="excel-preview-count" class="text-xs font-bold text-indigo-600">총 0명 준비됨</span>
-                <div class="flex space-x-2">
-                    <button type="button" onclick="closeExcelModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
-                        취소
-                    </button>
-                    <button type="button" id="btn-confirm-excel-import" onclick="confirmExcelImport()" disabled class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-colors shadow-md">
-                        일괄 등록 시작하기
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Teacher PIN Modal -->
-    <div id="modal-pin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl border border-slate-100 text-center">
-            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">교사 관리자 암호</h3>
-            <p class="text-xs text-slate-500 mb-4">교사 전용 기능을 사용하려면 비밀번호를 입력하세요. (기본: 1234)</p>
-            
-            <form onsubmit="handleCheckPin(event)">
-                <input type="password" id="pin-input" placeholder="비밀번호 입력" class="w-full text-center px-3 py-2 border border-slate-300 rounded-xl text-lg font-bold tracking-widest mb-4 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <div class="flex space-x-2">
-                    <button type="button" onclick="closePinModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
-                        취소
-                    </button>
-                    <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold">
-                        확인
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Change Teacher PIN Modal -->
-    <div id="modal-change-pin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl border border-slate-100 text-center">
-            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-                <i class="fa-solid fa-key"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mb-1">교사 비밀번호 변경</h3>
-            <p class="text-xs text-slate-500 mb-4">새로 사용할 비밀번호를 입력해 주세요.</p>
-            
-            <form onsubmit="handleChangePin(event)" class="space-y-3">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 text-left mb-1">새 비밀번호</label>
-                    <input type="password" id="new-pin-input" required placeholder="새 비밀번호 입력" class="w-full text-center px-3 py-2 border border-slate-300 rounded-xl text-base font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 text-left mb-1">새 비밀번호 확인</label>
-                    <input type="password" id="new-pin-confirm" required placeholder="한 번 더 입력" class="w-full text-center px-3 py-2 border border-slate-300 rounded-xl text-base font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                </div>
-                <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="closeChangePinModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
-                        취소
-                    </button>
-                    <button type="submit" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold">
-                        변경 완료
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Toast Notification Overlay Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
-
-    <!-- Custom Dialog Modal (Replaces alert/confirm) -->
-    <div id="modal-custom-dialog" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center">
-            <div id="dialog-icon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-xl bg-amber-100 text-amber-600">
-                <i class="fa-solid fa-circle-exclamation"></i>
-            </div>
-            <h3 id="dialog-title" class="text-base font-bold text-slate-900 mb-1">확인</h3>
-            <p id="dialog-message" class="text-xs text-slate-600 mb-5 leading-relaxed">메시지 내용</p>
-            <div id="dialog-actions" class="flex space-x-2">
-                <button id="dialog-btn-cancel" onclick="closeCustomDialog(false)" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
-                    취소
-                </button>
-                <button id="dialog-btn-confirm" onclick="closeCustomDialog(true)" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold">
-                    확인
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase Script Execution -->
+    <!-- Firebase Script Block -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            increment 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 🔑 [수정 가이드] 아래 firebaseConfig 객체 안에 Firebase 콘솔에서 복사한 키 값을 넣으세요.
-    const firebaseConfig = {
+        // Firebase Config
+ const firebaseConfig = {
   apiKey: "AIzaSyAH7WtGbV5ZWaFF7LMIboiQsaCwKysmB4w",
   authDomain: "classgoal-baceb.firebaseapp.com",
   projectId: "classgoal-baceb",
   storageBucket: "classgoal-baceb.firebasestorage.app",
   messagingSenderId: "117840521462",
-  appId: "1:117840521462:web:6f69ac786409c0a182a4d7",
-  measurementId: "G-BJCC5ZXY87"
+  appId: "1:117840521462:web:0eda5360621a9f1d82a4d7",
+  measurementId: "G-QD3R9XP53K"
 };
+
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Firebase 데이터 저장 경로 (학급별 데이터 분리 원할 경우 경로 수정 가능)
-        const CLASS_COLLECTION_PATH = 'my_class_data';
-        const STUDENTS_COL = collection(db, CLASS_COLLECTION_PATH, 'students', 'list');
-        const LOGS_COL = collection(db, CLASS_COLLECTION_PATH, 'logs', 'list');
-        const GOALS_COL = collection(db, CLASS_COLLECTION_PATH, 'goals', 'list');
-        const CONFIG_DOC = doc(db, CLASS_COLLECTION_PATH, 'settings');
+        let isTeacherMode = false;
+        let currentUser = null;
+        let studentData = [];
+        let workoutRewards = { r25: "체육시간 자유게임 10분", r50: "음료수 파티", r75: "학급 스포츠데이", r100: "오운완 챔피언 파티" };
+        let readingRewards = { r25: "예쁜 책갈피 선물", r50: "독서 쿠키 파티", r75: "자율 독서 & 자유시간", r100: "북카페 영화 파티" };
 
-        // Application Global State
-        window.state = {
-            currentUser: null,
-            isTeacherMode: false,
-            teacherPin: '1234',
-            students: [],
-            logs: [],
-            classGoals: [],
-            excelParsedData: [],
-            dialogCallback: null
-        };
+        let unsubscribeStudents = null;
+        let unsubscribeWorkoutRewards = null;
+        let unsubscribeReadingRewards = null;
 
-        // Initialize App & Auth
-        async function initApp() {
-            try {
-                // 익명 로그인 실행 (학생들이 별도 가입 없이 데이터를 주고받기 위함)
-                const userCred = await signInAnonymously(auth);
-                window.state.currentUser = userCred.user;
-                
-                // Update UI Connection Status
-                const statusEl = document.getElementById('sync-status');
-                if (statusEl) {
-                    statusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="hidden md:inline">실시간 연결됨</span>`;
-                }
+        // Auth Listener
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const authBtnText = document.getElementById("authBtnText");
+            const authStatusBadge = document.getElementById("authStatusBadge");
+            const authStatusDot = document.getElementById("authStatusDot");
+            const authStatusText = document.getElementById("authStatusText");
+            const teacherToolbar = document.getElementById("teacherToolbar");
+            const editWorkoutRewardsBtn = document.getElementById("editWorkoutRewardsBtn");
+            const editReadingRewardsBtn = document.getElementById("editReadingRewardsBtn");
 
-                // Subscribe to System Settings (Teacher PIN)
-                onSnapshot(CONFIG_DOC, (docSnap) => {
-                    if (docSnap.exists() && docSnap.data().teacherPin) {
-                        window.state.teacherPin = docSnap.data().teacherPin;
-                    }
-                }, (error) => {
-                    console.error("Config sync error:", error);
-                });
+            if (user) {
+                isTeacherMode = true;
+                authBtnText.innerText = "로그아웃";
+                authStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
+                authStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                authStatusText.innerText = `교사 인증됨 (${user.email || 'Google 계정'})`;
+                teacherToolbar.classList.remove("hidden");
+                editWorkoutRewardsBtn.classList.remove("hidden");
+                editReadingRewardsBtn.classList.remove("hidden");
 
-                // Subscribe to Class Goals Collection
-                onSnapshot(GOALS_COL, (snapshot) => {
-                    const goals = [];
-                    snapshot.forEach((doc) => {
-                        goals.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    if (goals.length === 0) {
-                        seedDefaultGoals();
-                    } else {
-                        goals.sort((a, b) => Number(a.targetPct) - Number(b.targetPct));
-                        window.state.classGoals = goals;
-                        renderStatsSummary();
-                        renderClassGoalsList();
-                    }
-                }, (error) => {
-                    console.error("Goals sync error:", error);
-                });
+                // Attach User-specific Firestore Listeners
+                attachUserListeners(user.uid);
+            } else {
+                isTeacherMode = false;
+                authBtnText.innerText = "교사 로그인";
+                authStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600";
+                authStatusDot.className = "w-2 h-2 rounded-full bg-slate-400";
+                authStatusText.innerText = "학생 (열람 전용 모드)";
+                teacherToolbar.classList.add("hidden");
+                editWorkoutRewardsBtn.classList.add("hidden");
+                editReadingRewardsBtn.classList.add("hidden");
 
-                // Subscribe to Students Collection
-                onSnapshot(STUDENTS_COL, (snapshot) => {
-                    const students = [];
-                    snapshot.forEach((doc) => {
-                        students.push({ id: doc.id, ...doc.data() });
-                    });
-                    window.state.students = students;
-                    renderAll();
-                }, (error) => {
-                    console.error("Students sync error:", error);
-                    showToast("데이터 동기화 오류. Firebase 설정을 확인해주세요.", "error");
-                });
-
-                // Subscribe to Activity Logs Collection
-                onSnapshot(LOGS_COL, (snapshot) => {
-                    const logs = [];
-                    snapshot.forEach((doc) => {
-                        logs.push({ id: doc.id, ...doc.data() });
-                    });
-                    logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    window.state.logs = logs;
-                    renderActivityLogs();
-                }, (error) => {
-                    console.error("Logs sync error:", error);
-                });
-
-            } catch (err) {
-                console.error("Auth / Init error:", err);
-                const statusEl = document.getElementById('sync-status');
-                if (statusEl) {
-                    statusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
-                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span class="hidden md:inline">연결 실패</span>`;
-                }
+                // Clear Listeners or attach public fallback
+                detachListeners();
+                studentData = [];
+                renderStudents();
+                renderClassStats();
             }
+        });
+
+        function attachUserListeners(uid) {
+            detachListeners();
+
+            // 1. Students collection per User
+            const studentsRef = collection(db, "users", uid, "students");
+            unsubscribeStudents = onSnapshot(studentsRef, (snapshot) => {
+                studentData = [];
+                snapshot.forEach((doc) => {
+                    studentData.push({ id: doc.id, ...doc.data() });
+                });
+                studentData.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+                renderStudents();
+                renderClassStats();
+            });
+
+            // 2. Workout Rewards Doc
+            const wDoc = doc(db, "users", uid, "settings", "workoutRewards");
+            unsubscribeWorkoutRewards = onSnapshot(wDoc, (docSnap) => {
+                if (docSnap.exists()) {
+                    workoutRewards = docSnap.data();
+                    updateRewardTextsUI();
+                    renderClassStats();
+                }
+            });
+
+            // 3. Reading Rewards Doc
+            const rDoc = doc(db, "users", uid, "settings", "readingRewards");
+            unsubscribeReadingRewards = onSnapshot(rDoc, (docSnap) => {
+                if (docSnap.exists()) {
+                    readingRewards = docSnap.data();
+                    updateRewardTextsUI();
+                    renderClassStats();
+                }
+            });
         }
 
-        // Seed initial default class goals if none exist
-        async function seedDefaultGoals() {
-            const defaults = [
-                { targetPct: 25, title: '칭찬 스티커 2배 데이 ⭐️' },
-                { targetPct: 50, title: '즐거운 과자 파티 🎉' },
-                { targetPct: 75, title: '자율 시간 1시간 & 게임 데이 🎮' },
-                { targetPct: 100, title: '학급 영화 관람 & 파티 🎬🍕' }
-            ];
-            for (const g of defaults) {
-                await addDoc(GOALS_COL, g);
-            }
+        function detachListeners() {
+            if (unsubscribeStudents) unsubscribeStudents();
+            if (unsubscribeWorkoutRewards) unsubscribeWorkoutRewards();
+            if (unsubscribeReadingRewards) unsubscribeReadingRewards();
         }
 
-        // Render All UI Components based on current state
-        window.renderAll = function() {
-            renderStudentList();
-            renderStatsSummary();
-            renderHallOfFame();
-            renderActivityLogs();
-        };
-
-        // Render Activity History Logs
-        window.renderActivityLogs = function() {
-            const listEl = document.getElementById('activity-log-list');
-            if (!listEl) return;
-
-            const logs = window.state.logs || [];
-            if (logs.length === 0) {
-                listEl.innerHTML = `<div class="text-slate-400 text-center py-4 text-xs">기록된 인증 로그가 없습니다.</div>`;
-                return;
-            }
-
-            listEl.innerHTML = logs.slice(0, 25).map(log => {
-                let badgeClass = 'bg-slate-100 text-slate-700';
-                let icon = 'fa-info-circle';
-
-                if (log.type === 'workout') {
-                    badgeClass = 'bg-orange-100 text-orange-800';
-                    icon = 'fa-dumbbell';
-                } else if (log.type === 'reading') {
-                    badgeClass = 'bg-emerald-100 text-emerald-800';
-                    icon = 'fa-book';
-                } else if (log.type === 'system') {
-                    badgeClass = 'bg-indigo-100 text-indigo-800';
-                    icon = 'fa-user-plus';
-                }
-
-                return `
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                        <div class="flex items-center space-x-2 overflow-hidden">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass} shrink-0 flex items-center gap-1">
-                                <i class="fa-solid ${icon}"></i> ${escapeHtml(log.studentName || '학급')}
-                            </span>
-                            <span class="text-slate-700 truncate font-medium">${escapeHtml(log.message)}</span>
-                        </div>
-                        <span class="text-[10px] text-slate-400 shrink-0 ml-2">${formatDateTime(log.timestamp)}</span>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        // Render Student Cards Grid
-        window.renderStudentList = function() {
-            const grid = document.getElementById('student-grid');
-            if (!grid) return;
-
-            let students = [...window.state.students];
-            const searchKeyword = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
-            const isTeacher = window.state.isTeacherMode;
-            const todayStr = getTodayString();
-
-            if (searchKeyword) {
-                students = students.filter(s => s.name && s.name.toLowerCase().includes(searchKeyword));
-            }
-
-            if (window.state.currentFilter === 'workout') {
-                students.sort((a, b) => (b.workoutCount || 0) - (a.workoutCount || 0));
-            } else if (window.state.currentFilter === 'reading') {
-                students.sort((a, b) => (b.readingCount || 0) - (a.readingCount || 0));
+        // Global Auth Functions
+        window.openAuthModal = () => {
+            if (isTeacherMode) {
+                if (confirm("로그아웃 하시겠습니까?")) signOut(auth);
             } else {
-                students.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
-            }
-
-            if (students.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
-                        <i class="fa-solid fa-users-slash text-3xl mb-2 text-slate-300"></i>
-                        <p class="text-sm font-medium text-slate-600">등록되었거나 조건에 맞는 학생이 없습니다.</p>
-                        ${isTeacher ? '<p class="text-xs text-indigo-600 mt-1 cursor-pointer font-bold" onclick="openAddStudentModal()">+ 새 학생 등록하기</p>' : ''}
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = students.map(s => {
-                const wCount = s.workoutCount || 0;
-                const wTarget = s.targetWorkout || 50;
-                const wPct = Math.min(100, Math.round((wCount / wTarget) * 100));
-
-                const rCount = s.readingCount || 0;
-                const rTarget = s.targetReading || 20;
-                const rPct = Math.min(100, Math.round((rCount / rTarget) * 100));
-
-                const isWorkoutDoneToday = s.lastWorkoutDate === todayStr;
-                const isDoubleCrown = wPct >= 100 && rPct >= 100;
-
-                return `
-                    <div class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md border border-slate-200 transition-all flex flex-col justify-between relative overflow-hidden group">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center space-x-2">
-                                    <h3 class="text-base font-extrabold text-slate-900 hover:text-indigo-600 cursor-pointer flex items-center gap-1.5" onclick="openDetailModal('${s.id}')">
-                                        ${escapeHtml(s.name)}
-                                    </h3>
-                                    ${isDoubleCrown ? '<span class="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-300">👑 더블 크라운</span>' : ''}
-                                </div>
-
-                                ${isTeacher ? `
-                                    <div class="flex items-center space-x-1">
-                                        <button onclick="openEditStudentModal('${s.id}')" title="수정" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors">
-                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                        </button>
-                                        <button onclick="deleteStudent('${s.id}')" title="삭제" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors">
-                                            <i class="fa-solid fa-trash-can text-xs"></i>
-                                        </button>
-                                    </div>
-                                ` : `
-                                    <button onclick="openDetailModal('${s.id}')" class="text-xs text-slate-400 hover:text-slate-600">
-                                        기록 <i class="fa-solid fa-angle-right text-[10px]"></i>
-                                    </button>
-                                `}
-                            </div>
-
-                            <!-- Workout -->
-                            <div class="bg-orange-50/70 border border-orange-100 rounded-xl p-3 mb-3">
-                                <div class="flex items-center justify-between text-xs font-bold text-orange-900 mb-1">
-                                    <span class="flex items-center gap-1">
-                                        <i class="fa-solid fa-dumbbell text-orange-500"></i> 🔥 오운완
-                                    </span>
-                                    <span>${wCount} / ${wTarget}회 (${wPct}%)</span>
-                                </div>
-                                <div class="w-full bg-orange-200/60 h-2 rounded-full overflow-hidden mb-2">
-                                    <div class="bg-orange-500 h-2 rounded-full transition-all duration-500" style="width: ${wPct}%"></div>
-                                </div>
-
-                                ${isTeacher ? `
-                                    <div class="flex items-center justify-between mt-2 pt-1 border-t border-orange-200/40">
-                                        <span class="text-[10px] ${isWorkoutDoneToday ? 'text-emerald-700 font-bold' : 'text-slate-400'}">
-                                            ${isWorkoutDoneToday ? '✅ 오늘 인증 완료' : '오늘 미인증'}
-                                        </span>
-                                        <button onclick="handleWorkout('${s.id}')" class="px-2.5 py-1 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1">
-                                            <i class="fa-solid fa-check"></i> 오늘 운동 인증 (+1)
-                                        </button>
-                                    </div>
-                                ` : `
-                                    <div class="text-[10px] text-right text-slate-400">
-                                        ${isWorkoutDoneToday ? '🔥 오늘 운동 인증 완료!' : '오늘 운동 후 교사에게 인증하세요.'}
-                                    </div>
-                                `}
-                            </div>
-
-                            <!-- Reading -->
-                            <div class="bg-emerald-50/70 border border-emerald-100 rounded-xl p-3">
-                                <div class="flex items-center justify-between text-xs font-bold text-emerald-900 mb-1">
-                                    <span class="flex items-center gap-1">
-                                        <i class="fa-solid fa-book text-emerald-600"></i> 📚 독서 마라톤
-                                    </span>
-                                    <span>${rCount} / ${rTarget}권 (${rPct}%)</span>
-                                </div>
-                                <div class="w-full bg-emerald-200/60 h-2 rounded-full overflow-hidden mb-2">
-                                    <div class="bg-emerald-600 h-2 rounded-full transition-all duration-500" style="width: ${rPct}%"></div>
-                                </div>
-
-                                ${isTeacher ? `
-                                    <div class="flex items-center justify-end space-x-1.5 mt-2 pt-1 border-t border-emerald-200/40">
-                                        <button onclick="handleReadingPrompt('${s.id}')" class="px-2 py-1 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-[11px] font-bold transition-all">
-                                            직접 입력
-                                        </button>
-                                        <button onclick="handleReading('${s.id}', 1)" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1">
-                                            <i class="fa-solid fa-plus"></i> 1권 인증
-                                        </button>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        // Teacher Mode Controls
-        window.switchMode = function(mode) {
-            if (mode === 'teacher') {
-                window.requestTeacherAccess();
-            } else {
-                window.state.isTeacherMode = false;
-                updateTeacherModeUI();
-                showToast("학생 전광판 모드로 전환되었습니다.", "info");
+                document.getElementById("authModal").classList.remove("hidden");
             }
         };
 
-        window.requestTeacherAccess = function() {
-            if (window.state.isTeacherMode) {
-                showToast("이미 교사 관리 모드 상태입니다.", "info");
-                return;
-            }
-            document.getElementById('pin-input').value = '';
-            document.getElementById('modal-pin').classList.remove('hidden');
-        };
+        window.closeAuthModal = () => document.getElementById("authModal").classList.add("hidden");
 
-        window.closePinModal = function() {
-            document.getElementById('modal-pin').classList.add('hidden');
-        };
-
-        window.handleCheckPin = function(e) {
-            e.preventDefault();
-            const input = document.getElementById('pin-input').value.trim();
-            if (input === window.state.teacherPin) {
-                window.state.isTeacherMode = true;
-                closePinModal();
-                updateTeacherModeUI();
-                showToast("교사 관리자 모드로 인증되었습니다.", "success");
-            } else {
-                showToast("비밀번호가 올바르지 않습니다.", "error");
-            }
-        };
-
-        // Change Teacher PIN Handlers
-        window.openChangePinModal = function() {
-            document.getElementById('new-pin-input').value = "";
-            document.getElementById('new-pin-confirm').value = "";
-            document.getElementById('modal-change-pin').classList.remove('hidden');
-        };
-
-        window.closeChangePinModal = function() {
-            document.getElementById('modal-change-pin').classList.add('hidden');
-        };
-
-        window.handleChangePin = async function(e) {
-            e.preventDefault();
-            const newPin = document.getElementById('new-pin-input').value.trim();
-            const confirmPin = document.getElementById('new-pin-confirm').value.trim();
-
-            if (!newPin || newPin.length < 2) {
-                showToast("비밀번호는 최소 2자리 이상 입력해주세요.", "warning");
-                return;
-            }
-
-            if (newPin !== confirmPin) {
-                showToast("새 비밀번호 확인이 일치하지 않습니다.", "error");
-                return;
-            }
-
+        window.loginWithGoogle = async () => {
+            const provider = new GoogleAuthProvider();
             try {
-                await setDoc(CONFIG_DOC, { teacherPin: newPin }, { merge: true });
-                window.state.teacherPin = newPin;
-                await logActivity('system', '교사설정', '교사 인증 비밀번호 변경 완료');
-                showToast("교사 비밀번호가 변경되었습니다.", "success");
-                closeChangePinModal();
-            } catch (err) {
-                console.error("Change PIN error:", err);
-                showToast("비밀번호 변경 중 오류가 발생했습니다.", "error");
+                await signInWithPopup(auth, provider);
+                closeAuthModal();
+            } catch (error) {
+                alert("Google 로그인 오류: " + error.message);
             }
         };
 
-        // Student Modal Handlers
-        window.openAddStudentModal = function() {
-            document.getElementById('modal-student-title').textContent = "신규 학생 등록";
-            document.getElementById('student-id').value = "";
-            document.getElementById('student-name').value = "";
-            document.getElementById('student-target-workout').value = "50";
-            document.getElementById('student-target-reading').value = "20";
-            document.getElementById('modal-student').classList.remove('hidden');
-        };
+        // Rewards Modal
+        window.openRewardModal = (target) => {
+            document.getElementById("currentRewardTarget").value = target;
+            document.getElementById("rewardModalTitle").innerText = target === 'workout' ? '🔥 오운완 학급 보상 설정' : '📚 독서 마라톤 학급 보상 설정';
 
-        window.openEditStudentModal = function(id) {
-            const student = window.state.students.find(s => s.id === id);
-            if (!student) return;
-
-            document.getElementById('modal-student-title').textContent = "학생 정보 및 목표 수정";
-            document.getElementById('student-id').value = student.id;
-            document.getElementById('student-name').value = student.name || "";
-            document.getElementById('student-target-workout').value = student.targetWorkout || 50;
-            document.getElementById('student-target-reading').value = student.targetReading || 20;
-            document.getElementById('modal-student').classList.remove('hidden');
-        };
-
-        window.closeStudentModal = function() {
-            document.getElementById('modal-student').classList.add('hidden');
-        };
-
-        window.handleSaveStudent = async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('student-id').value;
-            const name = document.getElementById('student-name').value.trim();
-            const targetWorkout = parseInt(document.getElementById('student-target-workout').value) || 50;
-            const targetReading = parseInt(document.getElementById('student-target-reading').value) || 20;
-
-            if (!name) return;
-
-            try {
-                if (id) {
-                    const docRef = doc(STUDENTS_COL, id);
-                    await updateDoc(docRef, { name, targetWorkout, targetReading });
-                    await logActivity('system', name, `학생 정보 수정 (${name})`);
-                    showToast(`${name} 학생 정보가 수정되었습니다.`, "success");
-                } else {
-                    await addDoc(STUDENTS_COL, {
-                        name,
-                        targetWorkout,
-                        targetReading,
-                        workoutCount: 0,
-                        readingCount: 0,
-                        lastWorkoutDate: "",
-                        createdAt: new Date().toISOString()
-                    });
-                    await logActivity('system', name, `신규 학생 등록 (${name})`);
-                    showToast(`${name} 학생이 등록되었습니다.`, "success");
-                }
-                closeStudentModal();
-            } catch (err) {
-                console.error("Save student error:", err);
-                showToast("학생 정보 저장 중 오류가 발생했습니다.", "error");
-            }
-        };
-
-        window.deleteStudent = async function(id) {
-            const student = window.state.students.find(s => s.id === id);
-            if (!student) return;
-
-            const confirmed = await showConfirmModal("학생 삭제", `'${student.name}' 학생의 모든 기록을 삭제하시겠습니까?`);
-            if (confirmed) {
-                try {
-                    await deleteDoc(doc(STUDENTS_COL, id));
-                    await logActivity('system', student.name, `학생 삭제 (${student.name})`);
-                    showToast(`${student.name} 학생이 삭제되었습니다.`, "info");
-                } catch (err) {
-                    console.error("Delete student error:", err);
-                    showToast("학생 삭제 중 오류가 발생했습니다.", "error");
-                }
-            }
-        };
-
-        // Workout / Reading Certifications
-        window.handleWorkout = async function(studentId) {
-            const student = window.state.students.find(s => s.id === studentId);
-            if (!student) return;
-
-            const todayStr = getTodayString();
-            if (student.lastWorkoutDate === todayStr) {
-                const proceed = await showConfirmModal("중복 인증 확인", `'${student.name}' 학생은 오늘 이미 오운완 인증을 완료했습니다. 추가로 기록하시겠습니까?`);
-                if (!proceed) return;
-            }
-
-            try {
-                const docRef = doc(STUDENTS_COL, studentId);
-                await updateDoc(docRef, {
-                    workoutCount: increment(1),
-                    lastWorkoutDate: todayStr
-                });
-                await logActivity('workout', student.name, `🔥 오운완 1회 인증! (누적 ${(student.workoutCount || 0) + 1}회)`);
-                showToast(`🔥 ${student.name} 오운완 인증 완료!`, "success");
-            } catch (err) {
-                console.error("Workout log error:", err);
-                showToast("운동 인증 저장 오류가 발생했습니다.", "error");
-            }
-        };
-
-        window.handleReading = async function(studentId, addCount) {
-            const student = window.state.students.find(s => s.id === studentId);
-            if (!student || !addCount) return;
-
-            try {
-                const docRef = doc(STUDENTS_COL, studentId);
-                await updateDoc(docRef, {
-                    readingCount: increment(addCount)
-                });
-                await logActivity('reading', student.name, `📚 독서 ${addCount}권 인증! (누적 ${(student.readingCount || 0) + addCount}권)`);
-                showToast(`📚 ${student.name} 독서 ${addCount}권 인증 완료!`, "success");
-            } catch (err) {
-                console.error("Reading log error:", err);
-                showToast("독서 인증 저장 오류가 발생했습니다.", "error");
-            }
-        };
-
-        window.handleReadingPrompt = async function(studentId) {
-            const student = window.state.students.find(s => s.id === studentId);
-            if (!student) return;
-
-            const input = prompt(`${student.name} 학생이 추가로 읽은 책 권수를 입력하세요:`, "1");
-            if (input !== null) {
-                const count = parseInt(input);
-                if (!isNaN(count) && count > 0) {
-                    await handleReading(studentId, count);
-                } else {
-                    showToast("올바른 숫자를 입력해주세요.", "warning");
-                }
-            }
-        };
-
-        // Student Detail Modal
-        window.openDetailModal = function(studentId) {
-            const student = window.state.students.find(s => s.id === studentId);
-            if (!student) return;
-
-            document.getElementById('detail-student-name').textContent = student.name;
+            const data = target === 'workout' ? workoutRewards : readingRewards;
+            document.getElementById("inputReward25").value = data.r25 || "";
+            document.getElementById("inputReward50").value = data.r50 || "";
+            document.getElementById("inputReward75").value = data.r75 || "";
+            document.getElementById("inputReward100").value = data.r100 || "";
             
-            const wCount = student.workoutCount || 0;
-            const wTarget = student.targetWorkout || 50;
-            const wPct = Math.min(100, Math.round((wCount / wTarget) * 100));
+            document.getElementById("rewardModal").classList.remove("hidden");
+        };
 
-            const rCount = student.readingCount || 0;
-            const rTarget = student.targetReading || 20;
-            const rPct = Math.min(100, Math.round((rCount / rTarget) * 100));
+        window.closeRewardModal = () => document.getElementById("rewardModal").classList.add("hidden");
 
-            document.getElementById('detail-workout-stat').textContent = `${wCount} / ${wTarget}회`;
-            document.getElementById('detail-workout-bar').style.width = `${wPct}%`;
+        window.saveRewards = async (e) => {
+            e.preventDefault();
+            if (!currentUser) return alert("교사 인증 후 사용 가능합니다.");
 
-            document.getElementById('detail-reading-stat').textContent = `${rCount} / ${rTarget}권`;
-            document.getElementById('detail-reading-bar').style.width = `${rPct}%`;
+            const target = document.getElementById("currentRewardTarget").value;
+            const r25 = document.getElementById("inputReward25").value;
+            const r50 = document.getElementById("inputReward50").value;
+            const r75 = document.getElementById("inputReward75").value;
+            const r100 = document.getElementById("inputReward100").value;
 
-            const studentLogs = (window.state.logs || []).filter(l => l.studentName === student.name);
-            const historyList = document.getElementById('detail-history-list');
+            const docName = target === 'workout' ? 'workoutRewards' : 'readingRewards';
+            await setDoc(doc(db, "users", currentUser.uid, "settings", docName), { r25, r50, r75, r100 });
+            closeRewardModal();
+        };
 
-            if (studentLogs.length === 0) {
-                historyList.innerHTML = `<div class="text-slate-400 text-center py-3">인증 기록이 아직 없습니다.</div>`;
+        function updateRewardTextsUI() {
+            document.getElementById("wRewardText25").innerText = workoutRewards.r25 || "체육시간 자유게임 10분";
+            document.getElementById("wRewardText50").innerText = workoutRewards.r50 || "음료수 파티";
+            document.getElementById("wRewardText75").innerText = workoutRewards.r75 || "학급 스포츠데이";
+            document.getElementById("wRewardText100").innerText = workoutRewards.r100 || "오운완 챔피언 파티";
+
+            document.getElementById("rRewardText25").innerText = readingRewards.r25 || "예쁜 책갈피 선물";
+            document.getElementById("rRewardText50").innerText = readingRewards.r50 || "독서 쿠키 파티";
+            document.getElementById("rRewardText75").innerText = readingRewards.r75 || "자율 독서 & 자유시간";
+            document.getElementById("rRewardText100").innerText = readingRewards.r100 || "북카페 영화 파티";
+        }
+
+        // Student CRUD & Actions
+        window.openAddStudentModal = () => {
+            document.getElementById("studentModalTitle").innerText = "학생 등록";
+            document.getElementById("modalStudentId").value = "";
+            document.getElementById("modalStudentName").value = "";
+            document.getElementById("modalWorkoutGoal").value = 50;
+            document.getElementById("modalReadingGoal").value = 30;
+            document.getElementById("studentModal").classList.remove("hidden");
+        };
+
+        window.closeStudentModal = () => document.getElementById("studentModal").classList.add("hidden");
+
+        window.saveStudent = async (e) => {
+            e.preventDefault();
+            if (!currentUser) return alert("교사 로그인 후 사용 가능합니다.");
+
+            const id = document.getElementById("modalStudentId").value;
+            const name = document.getElementById("modalStudentName").value;
+            const workoutGoal = Number(document.getElementById("modalWorkoutGoal").value);
+            const readingGoal = Number(document.getElementById("modalReadingGoal").value);
+
+            if (id) {
+                await updateDoc(doc(db, "users", currentUser.uid, "students", id), { name, workoutGoal, readingGoal });
             } else {
-                historyList.innerHTML = studentLogs.map(l => `
-                    <div class="flex items-center justify-between py-1 px-2 rounded bg-white border border-slate-100">
-                        <span class="font-semibold text-slate-800">${escapeHtml(l.message)}</span>
-                        <span class="text-[10px] text-slate-400">${formatDateTime(l.timestamp)}</span>
-                    </div>
-                `).join('');
-            }
-
-            document.getElementById('modal-detail').classList.remove('hidden');
-        };
-
-        window.closeDetailModal = function() {
-            document.getElementById('modal-detail').classList.add('hidden');
-        };
-
-        // Log Helper
-        async function logActivity(type, studentName, message) {
-            try {
-                await addDoc(LOGS_COL, {
-                    type,
-                    studentName,
-                    message,
-                    timestamp: new Date().toISOString()
+                await addDoc(collection(db, "users", currentUser.uid, "students"), {
+                    name,
+                    workoutCount: 0,
+                    workoutGoal,
+                    readingCount: 0,
+                    readingGoal,
+                    lastWorkoutDate: ""
                 });
-            } catch (err) {
-                console.error("Log write error:", err);
             }
-        }
+            closeStudentModal();
+        };
 
-        // Stats & Dashboard Summary
-        function renderStatsSummary() {
-            const students = window.state.students;
-            const totalStudents = students.length;
-            const todayStr = getTodayString();
-
-            document.getElementById('stat-student-count').textContent = `${totalStudents}명`;
-
-            if (totalStudents === 0) {
-                document.getElementById('stat-avg-progress').textContent = '0%';
-                document.getElementById('stat-workout-today-count').textContent = '오늘 0명 달성';
-                document.getElementById('stat-workout-total').textContent = '0회';
-                document.getElementById('stat-workout-bar').style.width = '0%';
-                document.getElementById('stat-reading-completers').textContent = '완주자 0명';
-                document.getElementById('stat-reading-total').textContent = '0권';
-                document.getElementById('stat-reading-bar').style.width = '0%';
-                renderMilestoneRewards(0);
-                return;
+        window.certifyWorkout = async (id, currentCount, lastDate) => {
+            if (!currentUser) return alert("교사 인증 후 클릭 가능합니다.");
+            const today = new Date().toISOString().split('T')[0];
+            if (lastDate === today) {
+                if (!confirm("오늘 이미 운동을 인증했습니다. 추가하시겠습니까?")) return;
             }
-
-            let totalWorkoutDone = 0;
-            let totalWorkoutTarget = 0;
-            let workoutDoneTodayCount = 0;
-
-            let totalReadingDone = 0;
-            let totalReadingTarget = 0;
-            let readingCompletersCount = 0;
-
-            let combinedProgressSum = 0;
-
-            students.forEach(s => {
-                const wCount = s.workoutCount || 0;
-                const wTarget = s.targetWorkout || 50;
-                const rCount = s.readingCount || 0;
-                const rTarget = s.targetReading || 20;
-
-                totalWorkoutDone += wCount;
-                totalWorkoutTarget += wTarget;
-                if (s.lastWorkoutDate === todayStr) workoutDoneTodayCount++;
-
-                totalReadingDone += rCount;
-                totalReadingTarget += rTarget;
-                if (rCount >= rTarget) readingCompletersCount++;
-
-                const wProg = Math.min(100, (wCount / wTarget) * 100);
-                const rProg = Math.min(100, (rCount / rTarget) * 100);
-                combinedProgressSum += (wProg + rProg) / 2;
+            await updateDoc(doc(db, "users", currentUser.uid, "students", id), {
+                workoutCount: increment(1),
+                lastWorkoutDate: today
             });
+        };
 
-            const avgProgress = Math.round(combinedProgressSum / totalStudents);
-            const workoutPct = Math.min(100, Math.round((totalWorkoutDone / (totalWorkoutTarget || 1)) * 100));
-            const readingPct = Math.min(100, Math.round((totalReadingDone / (totalReadingTarget || 1)) * 100));
-
-            document.getElementById('stat-avg-progress').textContent = `${avgProgress}%`;
-            document.getElementById('stat-workout-today-count').textContent = `오늘 ${workoutDoneTodayCount}명 달성`;
-            document.getElementById('stat-workout-total').textContent = `${totalWorkoutDone}회`;
-            document.getElementById('stat-workout-bar').style.width = `${workoutPct}%`;
-
-            document.getElementById('stat-reading-completers').textContent = `완주자 ${readingCompletersCount}명`;
-            document.getElementById('stat-reading-total').textContent = `${totalReadingDone}권`;
-            document.getElementById('stat-reading-bar').style.width = `${readingPct}%`;
-
-            renderMilestoneRewards(avgProgress);
-        }
-
-        // Render Dynamic Class Goals Dashboard Cards
-        function renderMilestoneRewards(avgProgress) {
-            const container = document.getElementById('reward-milestone-list');
-            if (!container) return;
-
-            const goals = [...(window.state.classGoals || [])];
-            goals.sort((a, b) => Number(a.targetPct) - Number(b.targetPct));
-
-            if (goals.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full text-center text-white/80 py-4 text-xs">
-                        등록된 학급 목표가 없습니다. 교사 관리 모드에서 목표를 설정해보세요.
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = goals.map(g => {
-                const targetPct = Number(g.targetPct) || 0;
-                const isUnlocked = avgProgress >= targetPct;
-                const title = g.title || `${targetPct}% 도전 목표`;
-
-                return `
-                    <div class="rounded-xl p-3 backdrop-blur-md border transition-all ${
-                        isUnlocked 
-                            ? 'bg-white text-slate-900 border-white shadow-md scale-105 ring-2 ring-amber-300' 
-                            : 'bg-white/10 text-white/80 border-white/20'
-                    }">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <span class="text-[11px] font-extrabold tracking-wider uppercase ${isUnlocked ? 'text-amber-600' : 'text-amber-200'}">
-                                ${targetPct}% 달성
-                            </span>
-                            ${isUnlocked 
-                                ? `<span class="bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1"><i class="fa-solid fa-check"></i> 해제됨</span>` 
-                                : `<span class="text-[10px] text-white/60"><i class="fa-solid fa-lock mr-1"></i>잠김</span>`
-                            }
-                        </div>
-                        <p class="text-xs font-bold leading-snug line-clamp-2 ${isUnlocked ? 'text-slate-900' : 'text-white'}">
-                            ${escapeHtml(title)}
-                        </p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Render Hall of Fame
-        function renderHallOfFame() {
-            const students = window.state.students;
-
-            const doubleList = [];
-            const workoutList = [];
-            const readingList = [];
-
-            students.forEach(s => {
-                const wDone = (s.workoutCount || 0) >= (s.targetWorkout || 50);
-                const rDone = (s.readingCount || 0) >= (s.targetReading || 20);
-
-                if (wDone && rDone) {
-                    doubleList.push(s);
-                } else if (wDone) {
-                    workoutList.push(s);
-                } else if (rDone) {
-                    readingList.push(s);
-                }
+        window.addReading = async (id, amount) => {
+            if (!currentUser) return alert("교사 인증 후 클릭 가능합니다.");
+            await updateDoc(doc(db, "users", currentUser.uid, "students", id), {
+                readingCount: increment(amount)
             });
-
-            const totalCompleters = doubleList.length + workoutList.length + readingList.length;
-            const badgeEl = document.getElementById('hall-of-fame-count-badge');
-            if (badgeEl) badgeEl.textContent = `총 ${totalCompleters}명 달성`;
-
-            document.getElementById('badge-count-double').textContent = `${doubleList.length}명`;
-            document.getElementById('badge-count-workout').textContent = `${workoutList.length}명`;
-            document.getElementById('badge-count-reading').textContent = `${readingList.length}명`;
-
-            renderHallCategory('hall-list-double', doubleList, 'double');
-            renderHallCategory('hall-list-workout', workoutList, 'workout');
-            renderHallCategory('hall-list-reading', readingList, 'reading');
-        }
-
-        function renderHallCategory(elementId, studentArr, type) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-
-            if (studentArr.length === 0) {
-                el.innerHTML = `<div class="text-slate-400 text-center py-4 text-xs">아직 해당 달성자가 없습니다.</div>`;
-                return;
-            }
-
-            el.innerHTML = studentArr.map(s => {
-                let badgeStyle = '';
-                let icon = '';
-
-                if (type === 'double') {
-                    badgeStyle = 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold';
-                    icon = '<i class="fa-solid fa-crown text-amber-200 mr-1"></i>';
-                } else if (type === 'workout') {
-                    badgeStyle = 'bg-orange-100 text-orange-800 font-semibold';
-                    icon = '<i class="fa-solid fa-dumbbell mr-1 text-orange-500"></i>';
-                } else {
-                    badgeStyle = 'bg-emerald-100 text-emerald-800 font-semibold';
-                    icon = '<i class="fa-solid fa-book mr-1 text-emerald-500"></i>';
-                }
-
-                return `
-                    <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-100 shadow-2xs">
-                        <span class="font-bold text-slate-800 hover:text-indigo-600 cursor-pointer" onclick="openDetailModal('${s.id}')">
-                            ${icon} ${escapeHtml(s.name)}
-                        </span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-md ${badgeStyle}">
-                            100% 완주!
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        /* --- CLASS GOALS MANAGEMENT --- */
-        window.openClassGoalsModal = function() {
-            resetGoalForm();
-            renderClassGoalsList();
-            document.getElementById('modal-class-goals').classList.remove('hidden');
         };
 
-        window.closeClassGoalsModal = function() {
-            document.getElementById('modal-class-goals').classList.add('hidden');
-        };
-
-        function renderClassGoalsList() {
-            const listContainer = document.getElementById('class-goals-list');
-            if (!listContainer) return;
-
-            const goals = [...(window.state.classGoals || [])];
-            goals.sort((a, b) => Number(a.targetPct) - Number(b.targetPct));
-
-            if (goals.length === 0) {
-                listContainer.innerHTML = `<div class="text-slate-400 text-center py-4 text-xs">등록된 학급 목표가 없습니다. 아래에서 목표를 추가해보세요.</div>`;
-                return;
-            }
-
-            listContainer.innerHTML = goals.map(g => `
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                    <div class="flex items-center space-x-2 overflow-hidden">
-                        <span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-extrabold rounded-md text-[11px] shrink-0">
-                            ${g.targetPct}%
-                        </span>
-                        <span class="font-bold text-slate-800 truncate">${escapeHtml(g.title)}</span>
-                    </div>
-                    <div class="flex items-center space-x-1 shrink-0 ml-2">
-                        <button onclick="editClassGoal('${g.id}')" title="수정" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-200 transition-colors">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button onclick="deleteClassGoal('${g.id}')" title="삭제" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-200 transition-colors">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.handleSaveClassGoal = async function() {
-            const editId = document.getElementById('goal-edit-id').value;
-            const targetPct = parseInt(document.getElementById('goal-target-pct').value);
-            const title = document.getElementById('goal-title').value.trim();
-
-            if (isNaN(targetPct) || targetPct <= 0 || targetPct > 100) {
-                showToast("달성률은 1~100 사이의 숫자를 입력해주세요.", "warning");
-                return;
-            }
-            if (!title) {
-                showToast("목표 보상 내용을 입력해주세요.", "warning");
-                return;
-            }
-
-            try {
-                if (editId) {
-                    const docRef = doc(GOALS_COL, editId);
-                    await updateDoc(docRef, { targetPct, title });
-                    await logActivity('system', '학급목표', `학급 목표 수정 (${targetPct}%: ${title})`);
-                    showToast("학급 목표가 수정되었습니다.", "success");
-                } else {
-                    await addDoc(GOALS_COL, { targetPct, title });
-                    await logActivity('system', '학급목표', `새 학급 목표 추가 (${targetPct}%: ${title})`);
-                    showToast("새 학급 목표가 추가되었습니다.", "success");
-                }
-                resetGoalForm();
-            } catch (err) {
-                console.error("Save class goal error:", err);
-                showToast("목표 저장 중 오류가 발생했습니다.", "error");
+        window.deleteStudent = async (id, name) => {
+            if (!currentUser) return alert("교사 인증 후 사용 가능합니다.");
+            if (confirm(`${name} 학생의 데이터를 삭제하시겠습니까?`)) {
+                await deleteDoc(doc(db, "users", currentUser.uid, "students", id));
             }
         };
 
-        window.editClassGoal = function(goalId) {
-            const goal = window.state.classGoals.find(g => g.id === goalId);
-            if (!goal) return;
-
-            document.getElementById('goal-edit-id').value = goal.id;
-            document.getElementById('goal-target-pct').value = goal.targetPct;
-            document.getElementById('goal-title').value = goal.title;
-            document.getElementById('goal-form-title').textContent = "✏️ 학급 목표 수정";
-            document.getElementById('btn-cancel-goal-edit').classList.remove('hidden');
-        };
-
-        window.deleteClassGoal = async function(goalId) {
-            const goal = window.state.classGoals.find(g => g.id === goalId);
-            if (!goal) return;
-
-            const confirmed = await showConfirmModal("목표 삭제", `'${goal.targetPct}% - ${goal.title}' 목표를 삭제하시겠습니까?`);
-            if (confirmed) {
-                try {
-                    await deleteDoc(doc(GOALS_COL, goalId));
-                    await logActivity('system', '학급목표', `학급 목표 삭제 (${goal.targetPct}%)`);
-                    showToast("학급 목표가 삭제되었습니다.", "info");
-                } catch (err) {
-                    console.error("Delete goal error:", err);
-                    showToast("목표 삭제 중 오류가 발생했습니다.", "error");
-                }
-            }
-        };
-
-        window.resetGoalForm = function() {
-            document.getElementById('goal-edit-id').value = "";
-            document.getElementById('goal-target-pct').value = "";
-            document.getElementById('goal-title').value = "";
-            document.getElementById('goal-form-title').textContent = "+ 새 학급 목표 추가";
-            document.getElementById('btn-cancel-goal-edit').classList.add('hidden');
-        };
-
-        /* --- EXCEL BULK UPLOAD --- */
-        window.openExcelModal = function() {
-            window.state.excelParsedData = [];
-            document.getElementById('excel-file-input').value = "";
-            document.getElementById('excel-file-name').textContent = "선택된 파일 없음";
-            document.getElementById('excel-preview-tbody').innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center py-8 text-slate-400">엑셀 파일을 업로드하면 미리보기가 표시됩니다.</td>
-                </tr>
-            `;
-            document.getElementById('excel-preview-count').textContent = "총 0명 준비됨";
-            document.getElementById('btn-confirm-excel-import').disabled = true;
-            document.getElementById('modal-excel').classList.remove('hidden');
-        };
-
-        window.closeExcelModal = function() {
-            document.getElementById('modal-excel').classList.add('hidden');
-        };
-
-        window.downloadExcelTemplate = function() {
-            const templateData = [
-                ["이름", "오운완목표", "독서목표"],
-                ["김철수", 50, 20],
-                ["이영희", 60, 25],
-                ["박민수", 40, 15]
+        // Excel Handlers
+        window.downloadExcelTemplate = () => {
+            const data = [
+                { "이름": "김철수", "오운완목표": 50, "독서목표": 30 },
+                { "이름": "이영희", "오운완목표": 40, "독서목표": 20 }
             ];
-            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "학생목표등록양식");
-            XLSX.writeFile(wb, "학급_학생목표_일괄등록_양식.xlsx");
-            showToast("엑셀 양식 파일이 다운로드 되었습니다.", "info");
+            XLSX.utils.book_append_sheet(wb, ws, "학생명단");
+            XLSX.writeFile(wb, "학급_학생_일괄등록_양식.xlsx");
         };
 
-        window.handleExcelFileSelect = function(e) {
+        window.triggerExcelUpload = () => document.getElementById("excelFileInput").click();
+
+        window.handleExcelUpload = (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('excel-file-name').textContent = file.name;
-
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async (evt) => {
                 try {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(firstSheet);
 
-                    parseAndPreviewExcelData(json);
+                    if (!json || json.length === 0) return alert("엑셀 파일에 데이터가 없습니다.");
+
+                    let count = 0;
+                    for (const row of json) {
+                        const keys = Object.keys(row);
+                        const nameKey = keys.find(k => k.trim().includes("이름") || k.trim().toLowerCase().includes("name"));
+                        const workoutKey = keys.find(k => k.trim().includes("오운완") || k.trim().includes("운동"));
+                        const readingKey = keys.find(k => k.trim().includes("독서") || k.trim().includes("책"));
+
+                        const name = nameKey ? String(row[nameKey]).trim() : "";
+                        const workoutGoal = workoutKey ? parseInt(row[workoutKey]) || 50 : 50;
+                        const readingGoal = readingKey ? parseInt(row[readingKey]) || 30 : 30;
+
+                        if (name && currentUser) {
+                            await addDoc(collection(db, "users", currentUser.uid, "students"), {
+                                name,
+                                workoutCount: 0,
+                                workoutGoal,
+                                readingCount: 0,
+                                readingGoal,
+                                lastWorkoutDate: ""
+                            });
+                            count++;
+                        }
+                    }
+                    alert(`${count}명의 학생이 성공적으로 일괄 등록되었습니다!`);
                 } catch (err) {
-                    console.error("Excel parse error:", err);
-                    showToast("엑셀 파일 형식을 읽을 수 없습니다. 양식 파일을 확인해주세요.", "error");
+                    alert("엑셀 파일 처리 중 오류가 발생했습니다: " + err.message);
                 }
+                e.target.value = "";
             };
             reader.readAsArrayBuffer(file);
         };
 
-        function parseAndPreviewExcelData(jsonRows) {
-            const parsed = [];
-            
-            jsonRows.forEach((row) => {
-                const normalizedRow = {};
-                Object.keys(row).forEach(k => {
-                    if (k) {
-                        const cleanKey = k.toString().replace(/\s+/g, '').toLowerCase();
-                        normalizedRow[cleanKey] = row[k];
-                    }
-                });
+        // Render UI
+        function renderStudents() {
+            const grid = document.getElementById("studentGrid");
+            grid.innerHTML = "";
 
-                const nameVal = normalizedRow['이름'] || normalizedRow['학생이름'] || normalizedRow['학생'] || normalizedRow['성명'] || normalizedRow['name'] || '';
-                const name = nameVal.toString().trim();
-
-                const workoutVal = normalizedRow['오운완목표'] || normalizedRow['오운완'] || normalizedRow['운동목표'] || normalizedRow['운동'] || normalizedRow['workout'] || normalizedRow['workouttarget'];
-                const readingVal = normalizedRow['독서목표'] || normalizedRow['독서'] || normalizedRow['독서권수'] || normalizedRow['권수'] || normalizedRow['reading'] || normalizedRow['readingtarget'];
-
-                if (name) {
-                    const workoutNum = parseInt(workoutVal);
-                    const readingNum = parseInt(readingVal);
-
-                    parsed.push({
-                        name,
-                        targetWorkout: (!isNaN(workoutNum) && workoutNum > 0) ? workoutNum : 50,
-                        targetReading: (!isNaN(readingNum) && readingNum > 0) ? readingNum : 20
-                    });
-                }
-            });
-
-            window.state.excelParsedData = parsed;
-
-            const tbody = document.getElementById('excel-preview-tbody');
-            const btnImport = document.getElementById('btn-confirm-excel-import');
-            const countLabel = document.getElementById('excel-preview-count');
-
-            if (parsed.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center py-8 text-rose-500 font-medium">
-                            유효한 학생 데이터가 없습니다. 양식([이름], [오운완목표], [독서목표])을 확인해주세요.
-                        </td>
-                    </tr>
-                `;
-                btnImport.disabled = true;
-                countLabel.textContent = "총 0명 준비됨";
+            if (studentData.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">등록된 학생이 없습니다. [학생 등록] 또는 [엑셀 일괄 등록] 버튼을 이용해보세요.</div>`;
                 return;
             }
 
-            tbody.innerHTML = parsed.map((item, index) => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 font-bold text-slate-400">${index + 1}</td>
-                    <td class="p-2.5 font-bold text-slate-800">${escapeHtml(item.name)}</td>
-                    <td class="p-2.5 text-orange-900 font-semibold">${item.targetWorkout}회</td>
-                    <td class="p-2.5 text-emerald-900 font-semibold">${item.targetReading}권</td>
-                </tr>
-            `).join('');
+            studentData.forEach(student => {
+                const wRate = Math.min(100, Math.round((student.workoutCount / student.workoutGoal) * 100)) || 0;
+                const rRate = Math.min(100, Math.round((student.readingCount / student.readingGoal) * 100)) || 0;
 
-            btnImport.disabled = false;
-            countLabel.textContent = `총 ${parsed.length}명 등록 준비완료`;
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4 relative group";
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <span class="font-bold text-lg text-slate-900">${student.name}</span>
+                        ${isTeacherMode ? `
+                            <button onclick="deleteStudent('${student.id}', '${student.name}')" class="text-slate-300 hover:text-red-500 p-1">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center text-xs font-semibold">
+                            <span class="text-orange-600 flex items-center gap-1"><i data-lucide="flame" class="w-3.5 h-3.5"></i> 오운완</span>
+                            <span class="text-slate-600">${student.workoutCount} / ${student.workoutGoal}회 (${wRate}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-orange-500 h-full rounded-full transition-all duration-500" style="width: ${wRate}%"></div>
+                        </div>
+                        ${isTeacherMode ? `
+                            <button onclick="certifyWorkout('${student.id}', ${student.workoutCount}, '${student.lastWorkoutDate}')" class="w-full mt-2 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-lg transition-all border border-orange-200 flex items-center justify-center gap-1">
+                                🔥 오늘 운동 인증 (+1)
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div class="space-y-1.5 pt-2">
+                        <div class="flex justify-between items-center text-xs font-semibold">
+                            <span class="text-emerald-600 flex items-center gap-1"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> 독서 마라톤</span>
+                            <span class="text-slate-600">${student.readingCount} / ${student.readingGoal}권 (${rRate}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: ${rRate}%"></div>
+                        </div>
+                        ${isTeacherMode ? `
+                            <div class="flex gap-1 mt-2">
+                                <button onclick="addReading('${student.id}', 1)" class="flex-1 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition-all border border-emerald-200">
+                                    📚 +1권
+                                </button>
+                                <button onclick="addReading('${student.id}', 5)" class="py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition-all border border-emerald-200">
+                                    +5권
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
         }
 
-        window.confirmExcelImport = async function() {
-            const items = window.state.excelParsedData || [];
-            if (items.length === 0) return;
+        function renderClassStats() {
+            if (studentData.length === 0) return;
 
-            const confirmed = await showConfirmModal("엑셀 일괄 등록", `총 ${items.length}명의 학생 및 목표를 학급에 등록하시겠습니까?`);
-            if (!confirmed) return;
+            let totalWorkoutRate = 0;
+            let totalReadingRate = 0;
+            const hallOfFameList = [];
 
-            const btnImport = document.getElementById('btn-confirm-excel-import');
-            btnImport.disabled = true;
-            btnImport.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> 등록 중...`;
+            studentData.forEach(student => {
+                const wRate = Math.min(100, (student.workoutCount / student.workoutGoal) * 100) || 0;
+                const rRate = Math.min(100, (student.readingCount / student.readingGoal) * 100) || 0;
+                
+                totalWorkoutRate += wRate;
+                totalReadingRate += rRate;
 
-            try {
-                let successCount = 0;
-                for (const student of items) {
-                    await addDoc(STUDENTS_COL, {
-                        name: student.name,
-                        targetWorkout: student.targetWorkout,
-                        targetReading: student.targetReading,
-                        workoutCount: 0,
-                        readingCount: 0,
-                        lastWorkoutDate: "",
-                        createdAt: new Date().toISOString()
-                    });
-                    successCount++;
+                const isWorkoutComplete = wRate >= 100;
+                const isReadingComplete = rRate >= 100;
+
+                if (isWorkoutComplete && isReadingComplete) {
+                    hallOfFameList.push({ name: student.name, badge: "👑 더블 크라운" });
+                } else if (isWorkoutComplete) {
+                    hallOfFameList.push({ name: student.name, badge: "🔥 운동 완주" });
+                } else if (isReadingComplete) {
+                    hallOfFameList.push({ name: student.name, badge: "📚 독서 완주" });
                 }
+            });
 
-                await logActivity('system', '엑셀일괄등록', `엑셀로 총 ${successCount}명 학생 및 목표 등록`);
-                showToast(`성공적으로 ${successCount}명의 학생이 추가되었습니다!`, "success");
-                closeExcelModal();
-            } catch (err) {
-                console.error("Bulk import error:", err);
-                showToast("일괄 등록 중 일부 데이터 오류가 발생했습니다.", "error");
-            } finally {
-                btnImport.disabled = false;
-                btnImport.innerHTML = `일괄 등록 시작하기`;
-            }
-        };
+            const avgWorkout = Math.round(totalWorkoutRate / studentData.length);
+            const avgReading = Math.round(totalReadingRate / studentData.length);
 
-        // UI Mode Sync
-        function updateTeacherModeUI() {
-            const isTeacher = window.state.isTeacherMode;
-            const btnStudent = document.getElementById('btn-mode-student');
-            const btnTeacher = document.getElementById('btn-mode-teacher');
-            const btnAddStudent = document.getElementById('btn-add-student');
-            const btnExcelUpload = document.getElementById('btn-excel-upload');
-            const btnChangePin = document.getElementById('btn-change-pin');
-            const btnEditRewards = document.getElementById('btn-edit-rewards');
-            const historyPanel = document.getElementById('teacher-history-panel');
+            document.getElementById("workoutClassAvgRate").innerText = `${avgWorkout}%`;
+            document.getElementById("workoutProgressBar").style.width = `${avgWorkout}%`;
+            [25, 50, 75, 100].forEach(m => {
+                const el = document.getElementById(`wReward${m}`);
+                if (avgWorkout >= m) {
+                    el.className = "border-2 border-orange-500 rounded-xl p-2.5 bg-gradient-to-br from-orange-50 to-amber-50 shadow-sm opacity-100";
+                } else {
+                    el.className = "border rounded-xl p-2.5 bg-slate-50 opacity-50";
+                }
+            });
 
-            if (isTeacher) {
-                if (btnTeacher) btnTeacher.className = "px-3 py-1.5 rounded-md transition-all shadow-sm bg-indigo-600 text-white font-semibold";
-                if (btnStudent) btnStudent.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900";
-                if (btnAddStudent) { btnAddStudent.classList.remove('hidden'); btnAddStudent.classList.add('flex'); }
-                if (btnExcelUpload) { btnExcelUpload.classList.remove('hidden'); btnExcelUpload.classList.add('flex'); }
-                if (btnChangePin) { btnChangePin.classList.remove('hidden'); btnChangePin.classList.add('flex'); }
-                if (btnEditRewards) { btnEditRewards.classList.remove('hidden'); btnEditRewards.classList.add('flex'); }
-                if (historyPanel) historyPanel.classList.remove('hidden');
+            document.getElementById("readingClassAvgRate").innerText = `${avgReading}%`;
+            document.getElementById("readingProgressBar").style.width = `${avgReading}%`;
+            [25, 50, 75, 100].forEach(m => {
+                const el = document.getElementById(`rReward${m}`);
+                if (avgReading >= m) {
+                    el.className = "border-2 border-emerald-500 rounded-xl p-2.5 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-sm opacity-100";
+                } else {
+                    el.className = "border rounded-xl p-2.5 bg-slate-50 opacity-50";
+                }
+            });
+
+            const fameContainer = document.getElementById("hallOfFameContainer");
+            if (hallOfFameList.length > 0) {
+                fameContainer.innerHTML = hallOfFameList.map(item => `
+                    <div class="px-3 py-1.5 bg-white rounded-xl border border-amber-200 shadow-sm flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                        <span>${item.badge}</span>
+                        <span class="text-amber-600">${item.name}</span>
+                    </div>
+                `).join('');
             } else {
-                if (btnStudent) btnStudent.className = "px-3 py-1.5 rounded-md transition-all shadow-sm bg-white text-slate-800 font-semibold";
-                if (btnTeacher) btnTeacher.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900";
-                if (btnAddStudent) { btnAddStudent.classList.add('hidden'); btnAddStudent.classList.remove('flex'); }
-                if (btnExcelUpload) { btnExcelUpload.classList.add('hidden'); btnExcelUpload.classList.remove('flex'); }
-                if (btnChangePin) { btnChangePin.classList.add('hidden'); btnChangePin.classList.remove('flex'); }
-                if (btnEditRewards) { btnEditRewards.classList.add('hidden'); btnEditRewards.classList.remove('flex'); }
-                if (historyPanel) historyPanel.classList.add('hidden');
+                fameContainer.innerHTML = `<p class="text-xs text-slate-500 py-2">아직 목표를 완주한 학생이 없습니다. 첫 번째 주인공에 도전해보세요!</p>`;
             }
-
-            renderStudentList();
         }
-
-        window.setFilter = function(filter) {
-            window.state.currentFilter = filter;
-            document.querySelectorAll('.filter-tab').forEach(btn => {
-                btn.className = "filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors whitespace-nowrap";
-            });
-
-            const activeBtn = document.getElementById(`filter-btn-${filter}`);
-            if (activeBtn) {
-                activeBtn.className = "filter-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white transition-colors whitespace-nowrap";
-            }
-
-            renderStudentList();
-        };
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-
-            let bgClass = 'bg-slate-800 text-white';
-            if (type === 'success') bgClass = 'bg-emerald-600 text-white';
-            if (type === 'error') bgClass = 'bg-rose-600 text-white';
-            if (type === 'warning') bgClass = 'bg-amber-500 text-white';
-
-            toast.className = `pointer-events-auto flex items-center px-4 py-3 rounded-xl shadow-lg text-xs font-bold transition-all transform translate-y-2 opacity-0 ${bgClass}`;
-            toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function showConfirmModal(title, message) {
-            return new Promise((resolve) => {
-                document.getElementById('dialog-title').textContent = title;
-                document.getElementById('dialog-message').textContent = message;
-                document.getElementById('modal-custom-dialog').classList.remove('hidden');
-
-                window.state.dialogCallback = (result) => {
-                    document.getElementById('modal-custom-dialog').classList.add('hidden');
-                    resolve(result);
-                };
-            });
-        }
-
-        window.closeCustomDialog = function(result) {
-            if (window.state.dialogCallback) {
-                window.state.dialogCallback(result);
-                window.state.dialogCallback = null;
-            }
-        };
-
-        // Utility Functions
-        function getTodayString() {
-            const d = new Date();
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function formatDateTime(isoString) {
-            if (!isoString) return '';
-            const d = new Date(isoString);
-            return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initApp();
-        });
     </script>
 </body>
 </html>
