@@ -60,7 +60,7 @@
                         </button>
                     </div>
                     <div class="flex items-baseline justify-between">
-                        <h2 class="text-lg font-bold text-slate-900">운동 평균 달성률</h2>
+                        <h2 class="text-lg font-bold text-slate-900">운동 누적 달성률</h2>
                         <span class="text-2xl font-extrabold text-orange-600" id="workoutClassAvgRate">0%</span>
                     </div>
 
@@ -83,7 +83,7 @@
                         </button>
                     </div>
                     <div class="flex items-baseline justify-between">
-                        <h2 class="text-lg font-bold text-slate-900">독서 평균 달성률</h2>
+                        <h2 class="text-lg font-bold text-slate-900">독서 누적 달성률</h2>
                         <span class="text-2xl font-extrabold text-emerald-600" id="readingClassAvgRate">0%</span>
                     </div>
 
@@ -164,7 +164,7 @@
                 <button onclick="closeRewardModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
-            <p class="text-xs text-slate-500">학급 평균 달성률(%) 기준에 따른 보상 항목을 추가, 수정, 삭제할 수 있습니다.</p>
+            <p class="text-xs text-slate-500">학급 누적 달성률(%) 기준에 따른 보상 항목을 추가, 수정, 삭제할 수 있습니다.</p>
 
             <input type="hidden" id="currentRewardTarget">
             
@@ -233,6 +233,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Config
+        const firebaseConfig = {
      const firebaseConfig = {
   apiKey: "AIzaSyAH7WtGbV5ZWaFF7LMIboiQsaCwKysmB4w",
   authDomain: "classgoal-baceb.firebaseapp.com",
@@ -242,6 +243,7 @@
   appId: "1:117840521462:web:0eda5360621a9f1d82a4d7",
   measurementId: "G-QD3R9XP53K"
 };
+
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -658,21 +660,30 @@
 
         function renderClassStats() {
             if (studentData.length === 0) {
+                document.getElementById("workoutClassAvgRate").innerText = `0%`;
+                document.getElementById("workoutProgressBar").style.width = `0%`;
+                document.getElementById("readingClassAvgRate").innerText = `0%`;
+                document.getElementById("readingProgressBar").style.width = `0%`;
                 renderGoalsGrid("workoutGoalsGrid", workoutGoals, 0, "orange");
                 renderGoalsGrid("readingGoalsGrid", readingGoals, 0, "emerald");
                 return;
             }
 
-            let totalWorkoutRate = 0;
-            let totalReadingRate = 0;
+            let sumWorkoutCount = 0;
+            let sumWorkoutGoal = 0;
+            let sumReadingCount = 0;
+            let sumReadingGoal = 0;
+
             const hallOfFameList = [];
 
             studentData.forEach(student => {
+                sumWorkoutCount += (student.workoutCount || 0);
+                sumWorkoutGoal += (student.workoutGoal || 1);
+                sumReadingCount += (student.readingCount || 0);
+                sumReadingGoal += (student.readingGoal || 1);
+
                 const wRate = Math.min(100, (student.workoutCount / student.workoutGoal) * 100) || 0;
                 const rRate = Math.min(100, (student.readingCount / student.readingGoal) * 100) || 0;
-                
-                totalWorkoutRate += wRate;
-                totalReadingRate += rRate;
 
                 const isWorkoutComplete = wRate >= 100;
                 const isReadingComplete = rRate >= 100;
@@ -686,16 +697,17 @@
                 }
             });
 
-            const avgWorkout = Math.round(totalWorkoutRate / studentData.length);
-            const avgReading = Math.round(totalReadingRate / studentData.length);
+            // 누적 달성률 계산: (전체 실천한 횟수 합 / 전체 목표 횟수 합) * 100
+            const cumulativeWorkoutRate = sumWorkoutGoal > 0 ? Math.min(100, Math.round((sumWorkoutCount / sumWorkoutGoal) * 100)) : 0;
+            const cumulativeReadingRate = sumReadingGoal > 0 ? Math.min(100, Math.round((sumReadingCount / sumReadingGoal) * 100)) : 0;
 
-            document.getElementById("workoutClassAvgRate").innerText = `${avgWorkout}%`;
-            document.getElementById("workoutProgressBar").style.width = `${avgWorkout}%`;
-            renderGoalsGrid("workoutGoalsGrid", workoutGoals, avgWorkout, "orange");
+            document.getElementById("workoutClassAvgRate").innerText = `${cumulativeWorkoutRate}%`;
+            document.getElementById("workoutProgressBar").style.width = `${cumulativeWorkoutRate}%`;
+            renderGoalsGrid("workoutGoalsGrid", workoutGoals, cumulativeWorkoutRate, "orange");
 
-            document.getElementById("readingClassAvgRate").innerText = `${avgReading}%`;
-            document.getElementById("readingProgressBar").style.width = `${avgReading}%`;
-            renderGoalsGrid("readingGoalsGrid", readingGoals, avgReading, "emerald");
+            document.getElementById("readingClassAvgRate").innerText = `${cumulativeReadingRate}%`;
+            document.getElementById("readingProgressBar").style.width = `${cumulativeReadingRate}%`;
+            renderGoalsGrid("readingGoalsGrid", readingGoals, cumulativeReadingRate, "emerald");
 
             const fameContainer = document.getElementById("hallOfFameContainer");
             if (hallOfFameList.length > 0) {
