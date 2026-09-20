@@ -233,7 +233,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Config
-const firebaseConfig = {
+     const firebaseConfig = {
   apiKey: "AIzaSyAH7WtGbV5ZWaFF7LMIboiQsaCwKysmB4w",
   authDomain: "classgoal-baceb.firebaseapp.com",
   projectId: "classgoal-baceb",
@@ -242,6 +242,7 @@ const firebaseConfig = {
   appId: "1:117840521462:web:0eda5360621a9f1d82a4d7",
   measurementId: "G-QD3R9XP53K"
 };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -505,12 +506,9 @@ const firebaseConfig = {
             closeStudentModal();
         };
 
-        window.certifyWorkout = async (id, currentCount, lastDate) => {
+        window.certifyWorkout = async (id) => {
             if (!currentUser) return alert("교사 인증 후 클릭 가능합니다.");
             const today = new Date().toISOString().split('T')[0];
-            if (lastDate === today) {
-                if (!confirm("오늘 이미 운동을 인증했습니다. 추가하시겠습니까?")) return;
-            }
             await updateDoc(doc(db, "users", currentUser.uid, "students", id), {
                 workoutCount: increment(1),
                 lastWorkoutDate: today
@@ -627,7 +625,7 @@ const firebaseConfig = {
                             <div class="bg-orange-500 h-full rounded-full transition-all duration-500" style="width: ${wRate}%"></div>
                         </div>
                         ${isTeacherMode ? `
-                            <button onclick="certifyWorkout('${student.id}', ${student.workoutCount}, '${student.lastWorkoutDate}')" class="w-full mt-2 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-lg transition-all border border-orange-200 flex items-center justify-center gap-1">
+                            <button onclick="certifyWorkout('${student.id}')" class="w-full mt-2 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-lg transition-all border border-orange-200 flex items-center justify-center gap-1">
                                 🔥 오늘 운동 인증 (+1)
                             </button>
                         ` : ''}
