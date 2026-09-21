@@ -37,7 +37,7 @@
                     <span id="authStatusText">학생 (열람 전용 모드)</span>
                 </div>
                 
-                <button id="authBtn" onclick="openAuthModal()" class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-sm transition-all shadow-sm">
+                <button id="authBtn" onclick="window.openAuthModal()" class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-sm transition-all shadow-sm cursor-pointer">
                     <i data-lucide="key-round" class="w-4 h-4"></i>
                     <span id="authBtnText">교사 로그인</span>
                 </button>
@@ -55,7 +55,7 @@
                 <div>
                     <div class="flex items-center justify-between gap-2 mb-2">
                         <span class="px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-800 text-xs font-bold">🔥 오운완 학급 목표</span>
-                        <button id="editWorkoutRewardsBtn" onclick="openRewardModal('workout')" class="hidden px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-orange-200">
+                        <button id="editWorkoutRewardsBtn" onclick="window.openRewardModal('workout')" class="hidden px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-orange-200">
                             <i data-lucide="settings" class="w-3 h-3"></i> 목표 관리
                         </button>
                     </div>
@@ -78,7 +78,7 @@
                 <div>
                     <div class="flex items-center justify-between gap-2 mb-2">
                         <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">📚 독서 마라톤 학급 목표</span>
-                        <button id="editReadingRewardsBtn" onclick="openRewardModal('reading')" class="hidden px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-emerald-200">
+                        <button id="editReadingRewardsBtn" onclick="window.openRewardModal('reading')" class="hidden px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold text-xs transition-all flex items-center gap-1 border border-emerald-200">
                             <i data-lucide="settings" class="w-3 h-3"></i> 목표 관리
                         </button>
                     </div>
@@ -115,14 +115,14 @@
                 <span>교사 관리 모드 활성화 중</span>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="downloadExcelTemplate()" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-300 transition-all flex items-center gap-1.5 shadow-sm">
+                <button onclick="window.downloadExcelTemplate()" class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-300 transition-all flex items-center gap-1.5 shadow-sm">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i> 엑셀 양식
                 </button>
-                <button onclick="triggerExcelUpload()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                <button onclick="window.triggerExcelUpload()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> 엑셀 일괄 등록
                 </button>
-                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
-                <button onclick="openAddStudentModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="window.handleExcelUpload(event)">
+                <button onclick="window.openAddStudentModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm flex items-center gap-1.5">
                     <i data-lucide="user-plus" class="w-4 h-4"></i> 학생 등록
                 </button>
             </div>
@@ -145,10 +145,10 @@
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-bold text-slate-900">교사 인증 로그인</h3>
-                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="window.closeAuthModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
-            <button onclick="loginWithGoogle()" class="w-full py-3 px-4 bg-white border border-slate-300 hover:bg-slate-50 font-semibold rounded-xl text-slate-700 flex items-center justify-center gap-2 transition-all shadow-sm">
+            <button id="googleLoginBtn" onclick="window.loginWithGoogle()" class="w-full py-3 px-4 bg-white border border-slate-300 hover:bg-slate-50 font-semibold rounded-xl text-slate-700 flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
                 Google 계정으로 로그인
             </button>
@@ -161,7 +161,7 @@
         <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl space-y-4 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-bold text-slate-900" id="rewardModalTitle">학급 목표 및 보상 관리</h3>
-                <button onclick="closeRewardModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="window.closeRewardModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
             <p class="text-xs text-slate-500">학급 누적 달성률(%) 기준에 따른 보상 항목을 추가, 수정, 삭제할 수 있습니다.</p>
@@ -171,13 +171,13 @@
             <!-- List of goals inside modal -->
             <div id="modalGoalList" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
 
-            <button type="button" onclick="addModalGoalRow()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1 border border-slate-300">
+            <button type="button" onclick="window.addModalGoalRow()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1 border border-slate-300">
                 <i data-lucide="plus" class="w-4 h-4"></i> 새 목표 추가
             </button>
 
             <div class="flex justify-end gap-2 pt-2 border-t">
-                <button type="button" onclick="closeRewardModal()" class="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-slate-50">취소</button>
-                <button type="button" onclick="saveRewards()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700">저장하기</button>
+                <button type="button" onclick="window.closeRewardModal()" class="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-slate-50">취소</button>
+                <button type="button" onclick="window.saveRewards()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700">저장하기</button>
             </div>
         </div>
     </div>
@@ -186,7 +186,7 @@
     <div id="studentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
             <h3 class="text-lg font-bold text-slate-900" id="studentModalTitle">학생 등록</h3>
-            <form onsubmit="saveStudent(event)" class="space-y-3">
+            <form onsubmit="window.saveStudent(event)" class="space-y-3">
                 <input type="hidden" id="modalStudentId">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">학생 이름</label>
@@ -203,7 +203,7 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeStudentModal()" class="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-slate-50">취소</button>
+                    <button type="button" onclick="window.closeStudentModal()" class="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-slate-50">취소</button>
                     <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700">저장</button>
                 </div>
             </form>
@@ -217,6 +217,8 @@
             getAuth, 
             GoogleAuthProvider, 
             signInWithPopup, 
+            signInWithRedirect,
+            getRedirectResult,
             signOut, 
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -233,8 +235,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Config
-        const firebaseConfig = {
-    const firebaseConfig = {
+ const firebaseConfig = {
   apiKey: "AIzaSyAH7WtGbV5ZWaFF7LMIboiQsaCwKysmB4w",
   authDomain: "classgoal-baceb.firebaseapp.com",
   projectId: "classgoal-baceb",
@@ -243,8 +244,6 @@
   appId: "1:117840521462:web:0eda5360621a9f1d82a4d7",
   measurementId: "G-QD3R9XP53K"
 };
-
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -253,7 +252,6 @@
         let currentUser = null;
         let studentData = [];
         
-        // Dynamic Goal Lists (Default Data)
         let workoutGoals = [
             { rate: 25, reward: "체육시간 자유게임 10분", icon: "🍭" },
             { rate: 50, reward: "음료수 파티", icon: "🥤" },
@@ -271,6 +269,11 @@
         let unsubscribeWorkoutRewards = null;
         let unsubscribeReadingRewards = null;
 
+        // Redirect Result Check
+        getRedirectResult(auth).catch((error) => {
+            console.error("Redirect Login Error:", error);
+        });
+
         // Auth Listener
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
@@ -284,24 +287,24 @@
 
             if (user) {
                 isTeacherMode = true;
-                authBtnText.innerText = "로그아웃";
-                authStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
-                authStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                authStatusText.innerText = `교사 인증됨 (${user.email || 'Google 계정'})`;
-                teacherToolbar.classList.remove("hidden");
-                editWorkoutRewardsBtn.classList.remove("hidden");
-                editReadingRewardsBtn.classList.remove("hidden");
+                if (authBtnText) authBtnText.innerText = "로그아웃";
+                if (authStatusBadge) authStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
+                if (authStatusDot) authStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                if (authStatusText) authStatusText.innerText = `교사 인증됨 (${user.email || 'Google 계정'})`;
+                if (teacherToolbar) teacherToolbar.classList.remove("hidden");
+                if (editWorkoutRewardsBtn) editWorkoutRewardsBtn.classList.remove("hidden");
+                if (editReadingRewardsBtn) editReadingRewardsBtn.classList.remove("hidden");
 
                 attachUserListeners(user.uid);
             } else {
                 isTeacherMode = false;
-                authBtnText.innerText = "교사 로그인";
-                authStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600";
-                authStatusDot.className = "w-2 h-2 rounded-full bg-slate-400";
-                authStatusText.innerText = "학생 (열람 전용 모드)";
-                teacherToolbar.classList.add("hidden");
-                editWorkoutRewardsBtn.classList.add("hidden");
-                editReadingRewardsBtn.classList.add("hidden");
+                if (authBtnText) authBtnText.innerText = "교사 로그인";
+                if (authStatusBadge) authStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600";
+                if (authStatusDot) authStatusDot.className = "w-2 h-2 rounded-full bg-slate-400";
+                if (authStatusText) authStatusText.innerText = "학생 (열람 전용 모드)";
+                if (teacherToolbar) teacherToolbar.classList.add("hidden");
+                if (editWorkoutRewardsBtn) editWorkoutRewardsBtn.classList.add("hidden");
+                if (editReadingRewardsBtn) editReadingRewardsBtn.classList.add("hidden");
 
                 detachListeners();
                 studentData = [];
@@ -313,7 +316,6 @@
         function attachUserListeners(uid) {
             detachListeners();
 
-            // 1. Students collection per User
             const studentsRef = collection(db, "users", uid, "students");
             unsubscribeStudents = onSnapshot(studentsRef, (snapshot) => {
                 studentData = [];
@@ -325,7 +327,6 @@
                 renderClassStats();
             });
 
-            // 2. Workout Goals Doc
             const wDoc = doc(db, "users", uid, "settings", "workoutGoals");
             unsubscribeWorkoutRewards = onSnapshot(wDoc, (docSnap) => {
                 if (docSnap.exists() && docSnap.data().items) {
@@ -334,7 +335,6 @@
                 }
             });
 
-            // 3. Reading Goals Doc
             const rDoc = doc(db, "users", uid, "settings", "readingGoals");
             unsubscribeReadingRewards = onSnapshot(rDoc, (docSnap) => {
                 if (docSnap.exists() && docSnap.data().items) {
@@ -355,26 +355,29 @@
             if (isTeacherMode) {
                 if (confirm("로그아웃 하시겠습니까?")) signOut(auth);
             } else {
-                document.getElementById("authModal").classList.remove("hidden");
+                const modal = document.getElementById("authModal");
+                if (modal) modal.classList.remove("hidden");
             }
         };
 
-        window.closeAuthModal = () => document.getElementById("authModal").classList.add("hidden");
+        window.closeAuthModal = () => {
+            const modal = document.getElementById("authModal");
+            if (modal) modal.classList.add("hidden");
+        };
 
         window.loginWithGoogle = async () => {
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
+            
             try {
                 await signInWithPopup(auth, provider);
-                closeAuthModal();
+                window.closeAuthModal();
             } catch (error) {
-                console.error("Google Auth Error:", error);
-                if (error.code === 'auth/popup-blocked') {
-                    alert("로그인 팝업창이 차단되었습니다. 브라우저의 팝업 차단을 해제하고 다시 시도해주세요.");
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    alert("Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 접속된 웹사이트 도메인을 등록하셔야 합니다.");
-                } else {
-                    alert("로그인 중 오류가 발생했습니다: " + error.message);
+                console.warn("Popup blocked or failed, attempting redirect login...", error);
+                try {
+                    await signInWithRedirect(auth, provider);
+                } catch (relErr) {
+                    alert("로그인 중 오류가 발생했습니다: " + relErr.message);
                 }
             }
         };
@@ -395,7 +398,7 @@
             const container = document.getElementById("modalGoalList");
             container.innerHTML = "";
 
-            goals.forEach((item, index) => {
+            goals.forEach((item) => {
                 const row = document.createElement("div");
                 row.className = "flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 goal-item-row";
                 row.innerHTML = `
@@ -419,7 +422,7 @@
                 `;
                 container.appendChild(row);
             });
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
         window.addModalGoalRow = () => {
@@ -446,7 +449,7 @@
                 </div>
             `;
             container.appendChild(row);
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         };
 
         window.saveRewards = async () => {
@@ -474,7 +477,7 @@
             if (target === 'workout') workoutGoals = updatedList;
             else readingGoals = updatedList;
 
-            closeRewardModal();
+            window.closeRewardModal();
             renderClassStats();
         };
 
@@ -511,7 +514,7 @@
                     lastWorkoutDate: ""
                 });
             }
-            closeStudentModal();
+            window.closeStudentModal();
         };
 
         window.certifyWorkout = async (id) => {
@@ -618,7 +621,7 @@
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <span class="font-bold text-lg text-slate-900">${student.name}</span>
                         ${isTeacherMode ? `
-                            <button onclick="deleteStudent('${student.id}', '${student.name}')" class="text-slate-300 hover:text-red-500 p-1">
+                            <button onclick="window.deleteStudent('${student.id}', '${student.name}')" class="text-slate-300 hover:text-red-500 p-1 cursor-pointer">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         ` : ''}
@@ -633,7 +636,7 @@
                             <div class="bg-orange-500 h-full rounded-full transition-all duration-500" style="width: ${wRate}%"></div>
                         </div>
                         ${isTeacherMode ? `
-                            <button onclick="certifyWorkout('${student.id}')" class="w-full mt-2 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-lg transition-all border border-orange-200 flex items-center justify-center gap-1">
+                            <button onclick="window.certifyWorkout('${student.id}')" class="w-full mt-2 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs rounded-lg transition-all border border-orange-200 flex items-center justify-center gap-1 cursor-pointer">
                                 🔥 오늘 운동 인증 (+1)
                             </button>
                         ` : ''}
@@ -649,10 +652,10 @@
                         </div>
                         ${isTeacherMode ? `
                             <div class="flex gap-1 mt-2">
-                                <button onclick="addReading('${student.id}', 1)" class="flex-1 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition-all border border-emerald-200">
+                                <button onclick="window.addReading('${student.id}', 1)" class="flex-1 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition-all border border-emerald-200 cursor-pointer">
                                     📚 +1권
                                 </button>
-                                <button onclick="addReading('${student.id}', 5)" class="py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition-all border border-emerald-200">
+                                <button onclick="window.addReading('${student.id}', 5)" class="py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition-all border border-emerald-200 cursor-pointer">
                                     +5권
                                 </button>
                             </div>
@@ -661,7 +664,7 @@
                 `;
                 grid.appendChild(card);
             });
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
         function renderClassStats() {
