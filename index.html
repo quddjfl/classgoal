@@ -234,7 +234,7 @@
 
         // Firebase Config
         const firebaseConfig = {
-     const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyAH7WtGbV5ZWaFF7LMIboiQsaCwKysmB4w",
   authDomain: "classgoal-baceb.firebaseapp.com",
   projectId: "classgoal-baceb",
@@ -292,7 +292,6 @@
                 editWorkoutRewardsBtn.classList.remove("hidden");
                 editReadingRewardsBtn.classList.remove("hidden");
 
-                // Attach User-specific Firestore Listeners
                 attachUserListeners(user.uid);
             } else {
                 isTeacherMode = false;
@@ -364,11 +363,19 @@
 
         window.loginWithGoogle = async () => {
             const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
             try {
                 await signInWithPopup(auth, provider);
                 closeAuthModal();
             } catch (error) {
-                alert("Google 로그인 오류: " + error.message);
+                console.error("Google Auth Error:", error);
+                if (error.code === 'auth/popup-blocked') {
+                    alert("로그인 팝업창이 차단되었습니다. 브라우저의 팝업 차단을 해제하고 다시 시도해주세요.");
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    alert("Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 접속된 웹사이트 도메인을 등록하셔야 합니다.");
+                } else {
+                    alert("로그인 중 오류가 발생했습니다: " + error.message);
+                }
             }
         };
 
@@ -459,7 +466,6 @@
                 }
             });
 
-            // Sort by percentage rate ascending
             updatedList.sort((a, b) => a.rate - b.rate);
 
             const docName = target === 'workout' ? 'workoutGoals' : 'readingGoals';
@@ -697,7 +703,6 @@
                 }
             });
 
-            // 누적 달성률 계산: (전체 실천한 횟수 합 / 전체 목표 횟수 합) * 100
             const cumulativeWorkoutRate = sumWorkoutGoal > 0 ? Math.min(100, Math.round((sumWorkoutCount / sumWorkoutGoal) * 100)) : 0;
             const cumulativeReadingRate = sumReadingGoal > 0 ? Math.min(100, Math.round((sumReadingCount / sumReadingGoal) * 100)) : 0;
 
